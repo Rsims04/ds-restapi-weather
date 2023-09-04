@@ -78,9 +78,7 @@ public class GETClient {
     }
 
     client.connect(serverName, portNumber);
-    System.out.println(client.sendMsg("GET"));
-    System.out.println(client.sendMsg("Hello"));
-    System.out.println(client.sendMsg("PUT"));
+    System.out.println(client.sendMsg("GET / HTTP/1.1"));
 
     client.disconnect();
   }

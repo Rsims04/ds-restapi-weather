@@ -31,7 +31,6 @@ public class AggregationServer {
 
         System.out.println("New Thread ..");
         Thread t = new ServerThread(clientSocket, in, out);
-
         t.start();
       } catch (IOException e) {
         clientSocket.close();
@@ -81,15 +80,16 @@ class ServerThread extends Thread {
           break;
         }
         System.out.println(line);
-        if (line.equals("GET")) {
+        if (line.equals("GET / HTTP/1.1")) {
+          writer.println(new Date().toString());
           // Send Weather Data To Client
           writer.println("200 OK; :)");
+          break;
         } else if (line.equals("PUT")) {
           // Do Content Server Stuff
           writer.println("Content Server PUT request...");
         } else {
-          writer.println(new Date().toString());
-          //   break;
+          continue;
         }
       } catch (IOException e) {
         e.printStackTrace();

@@ -4,4 +4,7 @@
  */
 package build;
 
-public class LamportClock {}
+public class LamportClock {
+
+  int tagRequests = 0; // To be incremented
+}
