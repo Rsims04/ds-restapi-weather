@@ -41,8 +41,16 @@ public class AggregationServer {
   }
 
   public static void main(String[] args) throws IOException {
-    AggregationServer server = new AggregationServer();
-    server.start(8080);
+    try {
+      int port = 4567;
+      if (args.length > 0) {
+        port = Integer.parseInt(args[0]);
+      }
+      AggregationServer server = new AggregationServer();
+      server.start(port);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 }
 
@@ -69,12 +77,19 @@ class ServerThread extends Thread {
         PrintWriter writer = new PrintWriter(out, true);
         line = in.readLine();
 
+        if (line.equals(null)) {
+          break;
+        }
         System.out.println(line);
         if (line.equals("GET")) {
+          // Send Weather Data To Client
           writer.println("200 OK; :)");
+        } else if (line.equals("PUT")) {
+          // Do Content Server Stuff
+          writer.println("Content Server PUT request...");
         } else {
           writer.println(new Date().toString());
-          break;
+          //   break;
         }
       } catch (IOException e) {
         e.printStackTrace();

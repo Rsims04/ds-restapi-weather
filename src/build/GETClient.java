@@ -6,10 +6,14 @@ package build;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.UnknownHostException;
 
 public class GETClient {
@@ -43,9 +47,40 @@ public class GETClient {
   public static void main(String[] args)
     throws UnknownHostException, IOException {
     GETClient client = new GETClient();
-    client.connect("127.0.0.1", 8080);
+    String serverName = "localhost";
+    int portNumber = 4567;
+
+    try {
+      if (args.length > 0) {
+        String input = args[0];
+        if (input.contains("https://")) {
+          input = input.split("//*")[1];
+        }
+
+        String splitInput[] = input.split(":\\.*");
+        if (splitInput.length <= 2) {
+          portNumber = Integer.parseInt(splitInput[1]);
+          serverName = splitInput[0];
+        } else {
+          portNumber = Integer.parseInt(splitInput[2]);
+          serverName = splitInput[0] + ":" + splitInput[1];
+        }
+
+        try {
+          InetAddress ip = InetAddress.getByName(serverName);
+          serverName = ip.getHostAddress();
+        } catch (UnknownHostException e) {
+          e.printStackTrace();
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    client.connect(serverName, portNumber);
     System.out.println(client.sendMsg("GET"));
     System.out.println(client.sendMsg("Hello"));
+    System.out.println(client.sendMsg("PUT"));
 
     client.disconnect();
   }
