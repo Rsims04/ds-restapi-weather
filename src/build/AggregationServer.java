@@ -87,8 +87,27 @@ class ServerThread extends Thread {
           break;
         } else if (line.equals("PUT")) {
           // Do Content Server Stuff
+
+          // Your server is designed to stay current
+          // and will remove any items in the JSON
+          // that have come from content servers which
+          // it has not communicated with for 30 seconds
+
+          // if storage file does not exist
+          // - create it
+          // - return status 201 - HTTP_CREATED
+
+          // else if later uploads are successful
+          // - return status 201 - succeed code
+
+          // then before the content server lost connection,
+          // - all other succeed response should use 200
+
+          // Sending no content to the server
+          // - status 204 -
           writer.println("Content Server PUT request...");
         } else {
+          // Returns Status 400
           continue;
         }
       } catch (IOException e) {
