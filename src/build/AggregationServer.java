@@ -12,10 +12,18 @@ public class AggregationServer {
 
   private ServerSocket serverSocket;
   private Socket clientSocket;
+  private LocalStorage localStorage = new LocalStorage();
+  private File localFile;
 
   public AggregationServer() {}
 
   public void start(int port) throws IOException {
+    // Does local storage exist?
+    if (this.localStorage.exists()) {
+      localFile = this.localStorage.getStore();
+      System.out.println("Local Storage exists: " + this.localFile.getName());
+    }
+
     this.clientSocket = null;
     this.serverSocket = new ServerSocket(port);
     System.out.println("Server listening on port: " + port);
@@ -23,14 +31,20 @@ public class AggregationServer {
       try {
         this.clientSocket = this.serverSocket.accept();
 
-        System.out.println("Client Connected!");
+        System.out.println("\nClient Connected!");
         BufferedReader in = new BufferedReader(
           new InputStreamReader(clientSocket.getInputStream())
         );
         PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 
-        System.out.println("New Thread ..");
-        Thread t = new ServerThread(clientSocket, in, out);
+        System.out.println("New Thread ..\n---\n");
+        Thread t = new ServerThread(
+          clientSocket,
+          in,
+          out,
+          localStorage,
+          localFile
+        );
         t.start();
       } catch (IOException e) {
         clientSocket.close();
@@ -58,14 +72,24 @@ class ServerThread extends Thread {
   private Socket clientSocket;
   private BufferedReader in;
   private PrintWriter out;
+  private LocalStorage localStorage;
+  private File localFile;
 
   /**
    * Constructor
    */
-  public ServerThread(Socket clientSocket, BufferedReader in, PrintWriter out) {
+  public ServerThread(
+    Socket clientSocket,
+    BufferedReader in,
+    PrintWriter out,
+    LocalStorage localStorage,
+    File localFile
+  ) {
     this.clientSocket = clientSocket;
     this.in = in;
     this.out = out;
+    this.localStorage = localStorage;
+    this.localFile = localFile;
   }
 
   @Override
@@ -76,17 +100,63 @@ class ServerThread extends Thread {
         PrintWriter writer = new PrintWriter(out, true);
         line = in.readLine();
 
-        if (line.equals(null)) {
+        if (line == null) {
           break;
         }
+
         System.out.println(line);
+
         if (line.equals("GET / HTTP/1.1")) {
-          writer.println(new Date().toString());
           // Send Weather Data To Client
-          writer.println("200 OK; :)");
+          writer.println("200 - OK");
           break;
-        } else if (line.equals("PUT")) {
+        } else if (line.contains("PUT")) {
+          if (this.localStorage.exists()) {
+            this.localFile = this.localStorage.getStore();
+          } else {
+            this.localFile = this.localStorage.createStore();
+          }
+
           // Do Content Server Stuff
+          int contentLength = 0;
+          // Read header - validate input
+          while (!line.equals("")) {
+            System.err.println(line);
+            line = in.readLine();
+            // Extract Content Length
+            if (line.contains("Content-Length")) {
+              contentLength = Integer.parseInt(line.replaceAll("\\D+", ""));
+            }
+          }
+          line = in.readLine();
+
+          if (line.contains("{")) {
+            String jsonObject = "";
+            int readLength = 0;
+            while (readLength <= contentLength || line == null) {
+              line += "\n";
+              jsonObject += line;
+              readLength += line.getBytes().length;
+
+              if (readLength < contentLength) {
+                line = in.readLine();
+              }
+            }
+            System.err.println("\n" + jsonObject);
+
+            JSONParser j = new JSONParser();
+            System.err.print(j.validateJSON(jsonObject));
+
+            if (j.validateJSON(jsonObject)) {
+              writer.println("200 - OK");
+              localStorage.updateStore(jsonObject);
+            } else {
+              writer.println("500 - Internal server error");
+            }
+          } else {
+            writer.println("204 - No Content");
+            break;
+          }
 
           // Your server is designed to stay current
           // and will remove any items in the JSON
@@ -108,6 +178,7 @@ class ServerThread extends Thread {
           writer.println("Content Server PUT request...");
         } else {
           // Returns Status 400
+          writer.println("400 - Bad Request");
           continue;
         }
       } catch (IOException e) {

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.util.LinkedHashMap;
+import java.util.Stack;
 
 public class JSONParser {
 
@@ -27,10 +28,14 @@ public class JSONParser {
   }
 
   public String toJSON(File file) throws IOException {
-    String jsonObject = "{";
+    if (file.length() <= 0) {
+      return "";
+    }
+    String jsonObject;
     try (
       BufferedReader bufferedReader = Files.newBufferedReader(file.toPath())
     ) {
+      jsonObject = "{";
       String line = bufferedReader.readLine();
       while (line != null) {
         String[] keyValPair = line.split(":");
@@ -54,11 +59,10 @@ public class JSONParser {
         jsonObject += "\n\t" + key + " : " + value + ",";
         line = bufferedReader.readLine();
       }
+      // Remove trailing comma
+      jsonObject = jsonObject.substring(0, jsonObject.length() - 1);
+      jsonObject += "\n" + "}";
     }
-    // Remove trailing comma
-    jsonObject = jsonObject.substring(0, jsonObject.length() - 1);
-    jsonObject += "\n" + "}";
-
     return jsonObject;
   }
 
@@ -66,9 +70,11 @@ public class JSONParser {
     throws IOException {
     LinkedHashMap<String, String> jsonHashMap = new LinkedHashMap<String, String>();
     BufferedReader br = new BufferedReader(new StringReader(jsonObject));
-    String line;
+    String line = br.readLine();
 
-    br.readLine();
+    while (!line.equals("{")) {
+      line = br.readLine();
+    }
     while ((line = br.readLine()) != null) {
       if (line.equals("}")) {
         break;
@@ -81,16 +87,80 @@ public class JSONParser {
 
       jsonHashMap.put(key, value);
     }
-
     return jsonHashMap;
   }
-  // public static void main(String[] args) throws IOException {
-  //   JSONParser j = new JSONParser();
-  //   File f = new File("input.txt");
-  //   String jo = j.toJSON(f);
-  //   LinkedHashMap<String, String> lhm = j.fromJSON(jo);
-  //   System.out.println(lhm.values());
-  //   System.out.println(lhm.get("name"));
-  //   System.out.println(lhm.get("id"));
-  // }
+
+  public boolean validateJSON(String jsonObject) throws IOException {
+    if (jsonObject.length() <= 0) {
+      return false;
+    }
+    Stack<Character> stack = new Stack<>();
+    for (Character token : jsonObject.toCharArray()) {
+      switch (token) {
+        case '{':
+          if (stack.empty()) {
+            stack.push('{');
+            break;
+          } else {
+            return false;
+          }
+        case '\"':
+          if (stack.empty()) {
+            return false;
+          }
+          Character previous = stack.peek();
+          if (previous != '\"') {
+            stack.push('\"');
+            break;
+          } else {
+            stack.pop();
+            break;
+          }
+        case ',':
+        case ':':
+          previous = stack.peek();
+          if (previous != '{') {
+            return false;
+          } else {
+            break;
+          }
+        case '}':
+          if (stack.isEmpty()) {
+            return false;
+          }
+          previous = stack.pop();
+          if (previous != '{') {
+            return false;
+          } else {
+            break;
+          }
+        default:
+          if (stack.empty()) {
+            return false;
+          }
+      }
+      if (stack.isEmpty()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static void main(String[] args) throws IOException {
+    JSONParser j = new JSONParser();
+    // File f = new File("input.txt");
+    File f = new File("input.txt");
+    // String jo = "PUT \n";
+    // jo += "content-type: json\n";
+    // jo += "content-length: 100 {\n";
+    // jo += j.toJSON(f);
+
+    String jo = j.toJSON(f);
+
+    System.out.println(j.validateJSON(jo));
+    LinkedHashMap<String, String> lhm = j.fromJSON(jo);
+    System.out.println(lhm.values());
+    System.out.println(lhm.get("name"));
+    System.out.println(lhm.get("id"));
+  }
 }
