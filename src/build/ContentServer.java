@@ -46,10 +46,6 @@ public class ContentServer {
 
   public static void main(String[] args)
     throws UnknownHostException, IOException {
-    // ContentServer content = new ContentServer();
-    // String serverName = "localhost";
-    // int portNumber = 4567;
-
     Timer timer = new Timer();
     timer.schedule(
       new TimerTask() {
@@ -105,7 +101,11 @@ public class ContentServer {
             String res = content.sendMsg(upload);
             System.out.println(res);
 
-            if (res.equals("200 - OK")) {
+            if (
+              res.equals("200 - OK") ||
+              res.equals("201 - HTTP_CREATED") ||
+              res.equals("204 - No Content")
+            ) {
               content.disconnect();
               timer.cancel();
             }

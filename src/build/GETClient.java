@@ -9,11 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.Socket;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.UnknownHostException;
 
 public class GETClient {
@@ -49,6 +45,7 @@ public class GETClient {
     GETClient client = new GETClient();
     String serverName = "localhost";
     int portNumber = 4567;
+    String stationID = "";
 
     try {
       if (args.length > 0) {
@@ -66,6 +63,10 @@ public class GETClient {
           serverName = splitInput[0] + ":" + splitInput[1];
         }
 
+        if (args.length > 1) {
+          stationID = "?stationID=" + args[1];
+        }
+
         try {
           InetAddress ip = InetAddress.getByName(serverName);
           serverName = ip.getHostAddress();
@@ -78,7 +79,7 @@ public class GETClient {
     }
 
     client.connect(serverName, portNumber);
-    System.out.println(client.sendMsg("GET / HTTP/1.1"));
+    System.out.println(client.sendMsg("GET /" + stationID + " HTTP/1.1"));
 
     client.disconnect();
   }

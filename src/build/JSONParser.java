@@ -66,9 +66,9 @@ public class JSONParser {
     return jsonObject;
   }
 
-  public LinkedHashMap<String, String> fromJSON(String jsonObject)
-    throws IOException {
-    LinkedHashMap<String, String> jsonHashMap = new LinkedHashMap<String, String>();
+  public String fromJSON(String jsonObject) throws IOException {
+    String jsonText = "";
+    // LinkedHashMap<String, String> jsonHashMap = new LinkedHashMap<String, String>();
     BufferedReader br = new BufferedReader(new StringReader(jsonObject));
     String line = br.readLine();
 
@@ -85,9 +85,9 @@ public class JSONParser {
       String value = keyValPair[1].replace(",", "").strip();
       value = value.replace("\"", "");
 
-      jsonHashMap.put(key, value);
+      jsonText += key + ":" + value + "\n";
     }
-    return jsonHashMap;
+    return jsonText.substring(0, jsonText.length() - 1);
   }
 
   public boolean validateJSON(String jsonObject) throws IOException {
@@ -157,10 +157,12 @@ public class JSONParser {
 
     String jo = j.toJSON(f);
 
-    System.out.println(j.validateJSON(jo));
-    LinkedHashMap<String, String> lhm = j.fromJSON(jo);
-    System.out.println(lhm.values());
-    System.out.println(lhm.get("name"));
-    System.out.println(lhm.get("id"));
+    // System.out.println(j.validateJSON(jo));
+    // LinkedHashMap<String, String> lhm = j.fromJSON(jo);
+    String lhm = j.fromJSON(jo);
+    System.out.println(lhm);
+    // System.out.println(lhm.values());
+    // System.out.println(lhm.get("name"));
+    // System.out.println(lhm.get("id"));
   }
 }
