@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Files;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.Stack;
 
 public class JSONParser {
@@ -27,10 +27,11 @@ public class JSONParser {
     }
   }
 
-  public String toJSON(File file) throws IOException {
+  public ArrayList<String> toJSON(File file) throws IOException {
     if (file.length() <= 0) {
-      return "";
+      return null;
     }
+    ArrayList<String> jsonStringArray = new ArrayList<String>();
     String jsonObject;
     try (
       BufferedReader bufferedReader = Files.newBufferedReader(file.toPath())
@@ -38,6 +39,21 @@ public class JSONParser {
       jsonObject = "{";
       String line = bufferedReader.readLine();
       while (line != null) {
+        if (line.isEmpty()) {
+          // Remove trailing comma
+          jsonObject = jsonObject.substring(0, jsonObject.length() - 1);
+          jsonObject += "\n" + "}";
+          jsonStringArray.add(jsonObject);
+          System.out.println(jsonObject);
+          line = bufferedReader.readLine();
+          if (line == null) {
+            System.out.println("NULL ALERT!!!");
+            break;
+          } else {
+            jsonObject = "{";
+            System.out.println(line);
+          }
+        }
         String[] keyValPair = line.split(":");
         String key = "\"" + keyValPair[0].strip() + "\"";
         Object value = new Object();
@@ -58,12 +74,15 @@ public class JSONParser {
         }
         jsonObject += "\n\t" + key + " : " + value + ",";
         line = bufferedReader.readLine();
+        System.out.println("AFTER: " + line);
       }
       // Remove trailing comma
       jsonObject = jsonObject.substring(0, jsonObject.length() - 1);
       jsonObject += "\n" + "}";
+      jsonStringArray.add(jsonObject);
+      System.out.println(jsonObject);
     }
-    return jsonObject;
+    return jsonStringArray;
   }
 
   public String fromJSON(String jsonObject) throws IOException {
@@ -155,7 +174,7 @@ public class JSONParser {
     // jo += "content-length: 100 {\n";
     // jo += j.toJSON(f);
 
-    String jo = j.toJSON(f);
+    String jo = j.toJSON(f).get(0);
 
     // System.out.println(j.validateJSON(jo));
     // LinkedHashMap<String, String> lhm = j.fromJSON(jo);

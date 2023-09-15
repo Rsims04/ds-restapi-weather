@@ -39,7 +39,7 @@ public class AggregationServer {
 
         int threadID = threadCount;
         System.out.println("\n---\nNew Thread - id:" + threadID + "\n---\n ");
-        Thread t = new ServerThread(
+        Thread t = new AggregationServerThread(
           threadID,
           clientSocket,
           in,
