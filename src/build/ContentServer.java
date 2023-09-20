@@ -129,6 +129,7 @@ public class ContentServer {
       );
 
       // Send each individual request to aggregation server and await response.
+      int index = 1;
       for (String request : content.putRequests) {
         content.connect(serverName, portNumber);
         String res = content.sendMsg(request);
@@ -140,8 +141,11 @@ public class ContentServer {
           res.equals("204 - No Content")
         ) {
           content.disconnect();
-          Thread.sleep(30000);
+          if (index != content.putRequests.size()) {
+            Thread.sleep(30000);
+          }
         }
+        index++;
       }
     } catch (Exception e) {
       e.printStackTrace();

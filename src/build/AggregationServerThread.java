@@ -56,7 +56,7 @@ class AggregationServerThread extends Thread {
         //
         // Process Client GET Request
         //
-        if (line.contains("GET")) {
+        if (line.contains("GET") && !line.contains("favicon")) {
           String response = "";
           if (line.contains("?")) {
             stationID =
@@ -71,11 +71,13 @@ class AggregationServerThread extends Thread {
             // '/?stationID=STATIONID' GET weather data for specific station
             // Find most recent requested station data
             // - Most recent is latest sent PUT (NOT latest received)
-            // - Find using Lamport Clock
-            // System.out.println("HI CLIENT");
-            response = localStorage.getCurrentEntry(stationID);
-            response = "200 - OK\n\n" + j.fromJSON(response);
-            // System.err.println(response);
+
+            if (localStorage.getNumEntries() < 1) {
+              response = "204 - No Content";
+            } else {
+              response = localStorage.getCurrentEntry(stationID);
+              response = "200 - OK\n\n" + j.fromJSON(response);
+            }
           }
 
           // Send Weather Data To Client
