@@ -28,10 +28,11 @@ public class JSONParser {
   }
 
   public ArrayList<String> toJSON(File file) throws IOException {
-    if (file.length() <= 0) {
-      return null;
-    }
     ArrayList<String> jsonStringArray = new ArrayList<String>();
+    if (file.length() <= 0) {
+      jsonStringArray.add("");
+      return jsonStringArray;
+    }
     String jsonObject;
     try (
       BufferedReader bufferedReader = Files.newBufferedReader(file.toPath())

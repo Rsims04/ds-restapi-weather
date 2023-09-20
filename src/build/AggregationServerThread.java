@@ -5,6 +5,7 @@ import java.net.*;
 
 class AggregationServerThread extends Thread {
 
+  private String csID;
   private int threadID;
   private Socket clientSocket;
   private BufferedReader in;
@@ -17,6 +18,7 @@ class AggregationServerThread extends Thread {
    * Constructor
    */
   public AggregationServerThread(
+    String csID,
     int threadID,
     Socket clientSocket,
     BufferedReader in,
@@ -24,6 +26,7 @@ class AggregationServerThread extends Thread {
     LocalStorage localStorage,
     File localFile
   ) {
+    this.csID = csID;
     this.threadID = threadID;
     this.clientSocket = clientSocket;
     this.in = in;
@@ -49,7 +52,9 @@ class AggregationServerThread extends Thread {
 
         // System.out.println(line);
 
+        //
         // Process Client GET Request
+        //
         if (line.contains("GET")) {
           if (line.contains("?")) {
             stationID =
@@ -57,13 +62,23 @@ class AggregationServerThread extends Thread {
           }
 
           // '/' GET all weather data
-
-          // '/?stationID=STATIONID' GET weather data for specific station
+          if (stationID == null) {
+            writer.println("200 - OK");
+            System.out.println("Getting /");
+          } else {
+            // '/?stationID=STATIONID' GET weather data for specific station
+            // Find most recent requested station data
+            // - Most recent is latest sent PUT (NOT latest received)
+            // - Find using Lamport Clock
+            writer.println("200 - OK");
+          }
 
           // Send Weather Data To Client
           writer.println("200 - OK");
           break;
+          //
           // Process Content Server PUT Request
+          //
         } else if (line.contains("PUT")) {
           // Read header - validate input
           int contentLength = 0;
@@ -104,7 +119,7 @@ class AggregationServerThread extends Thread {
                 this.localFile = this.localStorage.createStore();
                 writer.println("201 - HTTP_CREATED");
               }
-              localStorage.updateStore(jsonObject);
+              localStorage.updateStore(jsonObject, csID);
               break;
             } else {
               writer.println("500 - Internal server error");

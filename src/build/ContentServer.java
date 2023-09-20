@@ -16,10 +16,12 @@ import java.util.ArrayList;
 
 public class ContentServer {
 
+  private Integer csID = (int) (Math.random() * 10000);
   private Socket contentSocket;
   private PrintWriter out;
   private BufferedReader in;
   private JSONParser jp = new JSONParser();
+  private LamportClock lc = new LamportClock();
   private ArrayList<String> putRequests = new ArrayList<String>();
 
   public ContentServer() {}
@@ -45,7 +47,7 @@ public class ContentServer {
     for (String jsonObject : jsonStringArray) {
       // Craft Header
       String header = "PUT /" + filePath + " HTTP/1.1\n";
-      String userAgent = "ATOMClient/1/0\n";
+      String userAgent = "ATOMClient/1/" + csID + "\n";
       String contentType = "application/json\n";
       String contentLength = jsonObject.getBytes().length + "\n";
 
@@ -61,8 +63,17 @@ public class ContentServer {
   }
 
   public String sendMsg(String msg) throws IOException {
-    out.println(msg);
+    lc.sendEvent();
+    int clock = lc.getTime();
+    System.err.println("CLOCK: " + clock + " ; lc.time(): " + lc.getTime());
+    while (lc.getTime() != clock) {
+      System.err.println(clock + " CLOCK");
+    }
+    out.println(csID + "\r" + msg);
+    System.err.println(csID);
+    // System.err.println((int) (Math.random() * 1000));
     String res = in.readLine();
+    lc.recieveEvent(lc.getTime());
     return res;
   }
 
@@ -109,6 +120,7 @@ public class ContentServer {
       // Need to account for multiple data in one file
       ArrayList<String> jsonStringArray = content.jp.toJSON(file);
 
+      // Attach header(s) and split if multiple requests
       content.formatAndSplitRequest(
         jsonStringArray,
         filePath,
@@ -116,6 +128,7 @@ public class ContentServer {
         portNumber
       );
 
+      // Send each individual request to aggregation server and await response.
       for (String request : content.putRequests) {
         content.connect(serverName, portNumber);
         String res = content.sendMsg(request);
@@ -127,6 +140,7 @@ public class ContentServer {
           res.equals("204 - No Content")
         ) {
           content.disconnect();
+          Thread.sleep(30000);
         }
       }
     } catch (Exception e) {
