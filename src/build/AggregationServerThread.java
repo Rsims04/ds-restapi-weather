@@ -72,7 +72,7 @@ class AggregationServerThread extends Thread {
             // Find most recent requested station data
             // - Most recent is latest sent PUT (NOT latest received)
 
-            if (localStorage.getNumEntries() < 1) {
+            if (localStorage.getNumEntries(stationID) < 1) {
               response = "204 - No Content";
             } else {
               response = localStorage.getCurrentEntry(stationID);

@@ -78,6 +78,9 @@ public class AggregationServer {
 
         int threadID = threadCount;
         String csID = extractID(in);
+        if (csID != null) {
+          csID += threadID;
+        }
         System.out.println("\n---\nNew Thread - id:" + threadID + "\n---\n ");
         Thread t = new AggregationServerThread(
           csID,

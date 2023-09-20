@@ -39,7 +39,6 @@ public class LocalStorage {
     try {
       File file = new File("localStorage.txt");
       System.out.println("File found: " + file.getName() + ".");
-      numEntries = getNumEntries();
       return file;
     } catch (Exception e) {
       e.printStackTrace();
@@ -82,7 +81,7 @@ public class LocalStorage {
     return false;
   }
 
-  public int getNumEntries() throws IOException {
+  public int getNumEntries(String stationID) throws IOException {
     numEntries = 0;
     File file = new File("localStorage.txt");
 
@@ -92,7 +91,7 @@ public class LocalStorage {
       ) {
         String line = bufferedReader.readLine();
         while (line != null) {
-          if (line.equals("{")) {
+          if (line.contains(stationID)) {
             numEntries++;
           }
           line = bufferedReader.readLine();
@@ -103,7 +102,7 @@ public class LocalStorage {
   }
 
   public synchronized void removeEntries(String csID) throws IOException {
-    System.out.println("Remove : csID : " + csID);
+    // System.out.println("Remove : csID : " + csID);
     Path file = Paths.get("localStorage.txt");
     Path tmp = Paths.get("tmp");
 
@@ -160,9 +159,9 @@ public class LocalStorage {
           while (!line.equals("}")) {
             jsonObject += line + '\n';
             line = bufferedReader.readLine();
-            System.out.println("l : " + line);
+            // System.out.println("l : " + line);
             if (line == null) {
-              System.exit(0);
+              break;
             }
           }
           jsonObject += "}" + '\n';
@@ -182,7 +181,7 @@ public class LocalStorage {
       }
     }
 
-    System.out.println("Returning: " + jsonObject);
+    // System.out.println("Returning: " + jsonObject);
     return jsonObject;
   }
 }

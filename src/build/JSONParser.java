@@ -75,7 +75,7 @@ public class JSONParser {
         }
         jsonObject += "\n\t" + key + " : " + value + ",";
         line = bufferedReader.readLine();
-        System.out.println("AFTER: " + line);
+        // System.out.println("AFTER: " + line);
       }
       // Remove trailing comma
       jsonObject = jsonObject.substring(0, jsonObject.length() - 1);
@@ -87,29 +87,32 @@ public class JSONParser {
   }
 
   public String fromJSON(String jsonObject) throws IOException {
-    System.out.println("From JSON");
+    // System.out.println("From JSON");
     String jsonText = "";
     // LinkedHashMap<String, String> jsonHashMap = new LinkedHashMap<String, String>();
     BufferedReader br = new BufferedReader(new StringReader(jsonObject));
     String line = br.readLine();
 
-    while (!line.equals("{")) {
-      line = br.readLine();
-    }
-    while ((line = br.readLine()) != null) {
-      if (line.equals("}")) {
-        break;
+    if (line != null) {
+      while (!line.equals("{")) {
+        line = br.readLine();
       }
+      while ((line = br.readLine()) != null) {
+        if (line.equals("}")) {
+          break;
+        }
 
-      String keyValPair[] = line.split(":");
-      String key = keyValPair[0].replace("\"", "").strip();
-      String value = keyValPair[1].replace(",", "").strip();
-      value = value.replace("\"", "");
+        String keyValPair[] = line.split(":");
+        String key = keyValPair[0].replace("\"", "").strip();
+        String value = keyValPair[1].replace(",", "").strip();
+        value = value.replace("\"", "");
 
-      jsonText += key + ":" + value + "\n";
+        jsonText += key + ":" + value + "\n";
+      }
+      // System.out.println(jsonText);
+      return jsonText.substring(0, jsonText.length() - 1);
     }
-    System.out.println(jsonText);
-    return jsonText.substring(0, jsonText.length() - 1);
+    return jsonText;
   }
 
   public boolean validateJSON(String jsonObject) throws IOException {
