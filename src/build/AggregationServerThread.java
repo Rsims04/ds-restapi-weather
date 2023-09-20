@@ -13,6 +13,7 @@ class AggregationServerThread extends Thread {
   private LocalStorage localStorage;
   private File localFile;
   private String stationID;
+  JSONParser j = new JSONParser();
 
   /**
    * Constructor
@@ -39,7 +40,7 @@ class AggregationServerThread extends Thread {
    *
    */
   @Override
-  public void run() {
+  public synchronized void run() {
     while (true) {
       String line;
       try {
@@ -56,6 +57,7 @@ class AggregationServerThread extends Thread {
         // Process Client GET Request
         //
         if (line.contains("GET")) {
+          String response = "";
           if (line.contains("?")) {
             stationID =
               line.substring(line.indexOf("=") + 1, line.indexOf(" H"));
@@ -70,11 +72,14 @@ class AggregationServerThread extends Thread {
             // Find most recent requested station data
             // - Most recent is latest sent PUT (NOT latest received)
             // - Find using Lamport Clock
-            writer.println("200 - OK");
+            // System.out.println("HI CLIENT");
+            response = localStorage.getCurrentEntry(stationID);
+            response = "200 - OK\n\n" + j.fromJSON(response);
+            // System.err.println(response);
           }
 
           // Send Weather Data To Client
-          writer.println("200 - OK");
+          writer.println(response);
           break;
           //
           // Process Content Server PUT Request
@@ -108,7 +113,7 @@ class AggregationServerThread extends Thread {
             System.err.println("\n" + jsonObject);
 
             // Check if valid JSON
-            JSONParser j = new JSONParser();
+            // JSONParser j = new JSONParser();
             System.err.println(j.validateJSON(jsonObject));
             if (j.validateJSON(jsonObject)) {
               // If valid create/update local storage file

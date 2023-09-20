@@ -58,11 +58,10 @@ public class AggregationServer {
 
   public void start(int port) throws IOException {
     // Does local storage exist?
-    // if (this.localStorage.exists()) {
-    //   localFile = this.localStorage.getStore();
-    //   System.out.println("Local Storage exists: " + this.localFile.getName());
-    //   localFile.close();
-    // }
+    if (this.localStorage.exists()) {
+      localFile = this.localStorage.getStore();
+      System.out.println("Local Storage exists: " + this.localFile.getName());
+    }
 
     this.clientSocket = null;
     this.serverSocket = new ServerSocket(port);
@@ -101,11 +100,13 @@ public class AggregationServer {
             System.err.println("request: " + request.clock);
           }
           Request request = queue.peek();
-          lc.recieveEvent(lc.getTime());
+          lc.receiveEvent(lc.getTime());
           if (request.clock < lc.getTime()) {
             request = queue.remove();
             request.thread.start();
-            startTimer(request.csID, localStorage);
+            if (csID != null) {
+              startTimer(request.csID, localStorage);
+            }
           }
         }
       } catch (IOException e) {

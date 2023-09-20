@@ -20,8 +20,8 @@ public class LamportClock {
     System.out.println("sendEvent - add 1: " + timeStamp);
   }
 
-  public synchronized void recieveEvent(int eventTime) {
+  public synchronized void receiveEvent(int eventTime) {
     timeStamp.set(Math.max(getTime(), eventTime) + 1);
-    System.out.println("recieveEvent - add: " + timeStamp);
+    System.out.println("receiveEvent - add: " + timeStamp);
   }
 }

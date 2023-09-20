@@ -30,7 +30,16 @@ public class GETClient {
 
   public String sendMsg(String msg) throws IOException {
     out.println(msg);
-    String res = in.readLine();
+
+    String res = "";
+    String line = in.readLine();
+    while (true) {
+      if (line == null) {
+        break;
+      }
+      res += line + '\n';
+      line = in.readLine();
+    }
     return res;
   }
 

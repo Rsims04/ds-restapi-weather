@@ -5,11 +5,11 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 public class LocalStorage {
 
@@ -49,7 +49,11 @@ public class LocalStorage {
 
   public synchronized void updateStore(String jsonObject, String csID) {
     try {
-      Date date = new Date();
+      LocalDateTime date = LocalDateTime.now();
+      // DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
+      //   "yyyy MM dd ss AA"
+      // );
+      // String dateString = date.format(formatter);
       // int valueOffset = 8;
       // String id = jsonObject.substring(
       //   jsonObject.indexOf("\"id\"") + valueOffset,
@@ -98,10 +102,10 @@ public class LocalStorage {
     return numEntries;
   }
 
-  public void removeEntries(String csID) throws IOException {
+  public synchronized void removeEntries(String csID) throws IOException {
     System.out.println("Remove : csID : " + csID);
     Path file = Paths.get("localStorage.txt");
-    Path tmp = Paths.get("tmp.txt");
+    Path tmp = Paths.get("tmp");
 
     try (
       BufferedReader bufferedReader = Files.newBufferedReader(file);
@@ -109,7 +113,6 @@ public class LocalStorage {
     ) {
       String line = bufferedReader.readLine();
       while (line != null) {
-        System.out.print("looping...");
         if (line.contains(csID)) {
           while (!line.equals("}")) {
             line = bufferedReader.readLine();
@@ -120,7 +123,6 @@ public class LocalStorage {
             continue;
           }
         } else {
-          System.out.println("WRITING: " + line);
           writer.write(line);
           writer.newLine();
         }
@@ -128,22 +130,70 @@ public class LocalStorage {
       }
       writer.close();
 
-      System.out.println("deleting File");
       Files.delete(file);
-      System.out.println("Moving File");
       Files.move(tmp, file);
-      // System.out.println("DELETING NOW \n\n\n");
-      // if (!file.delete()) {
-      //   System.out.println("Could not delete file...");
-      // }
-      // if (!tmpFile.renameTo(file)) {
-      //   System.out.println("Could not rename tmp file...");
-      // }
-      // if (!tmpFile.delete()) {
-      //   System.out.println("Could not delete tmp file...");
-      // }
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  public String getCurrentEntry(String stationID) throws IOException {
+    System.out.println("Get Entry For: " + stationID);
+    ArrayList<Entry> entries = new ArrayList<Entry>();
+    String jsonObject = "";
+    LocalDateTime date = LocalDateTime.of(1, 1, 1, 0, 0);
+
+    Path file = Paths.get("localStorage.txt");
+
+    try (BufferedReader bufferedReader = Files.newBufferedReader(file);) {
+      String line = bufferedReader.readLine();
+      String dateString = "";
+      while (line != null) {
+        if (line.contains(";")) {
+          dateString = line.split(";")[1];
+          date = LocalDateTime.parse(dateString);
+        }
+        if (line.contains(stationID)) {
+          System.out.println(line);
+
+          jsonObject += "{" + '\n';
+          while (!line.equals("}")) {
+            jsonObject += line + '\n';
+            line = bufferedReader.readLine();
+            System.out.println("l : " + line);
+            if (line == null) {
+              System.exit(0);
+            }
+          }
+          jsonObject += "}" + '\n';
+
+          Entry entry = new Entry(jsonObject, date);
+          entries.add(entry);
+          jsonObject = "";
+        }
+
+        line = bufferedReader.readLine();
+      }
+      date = LocalDateTime.of(1, 1, 1, 1, 1);
+      for (Entry entry : entries) {
+        if (entry.date.isAfter(date)) {
+          jsonObject = entry.jsonObject;
+        }
+      }
+    }
+
+    System.out.println("Returning: " + jsonObject);
+    return jsonObject;
+  }
+}
+
+class Entry {
+
+  String jsonObject;
+  LocalDateTime date;
+
+  Entry(String jsonObject, LocalDateTime date) {
+    this.jsonObject = jsonObject;
+    this.date = date;
   }
 }

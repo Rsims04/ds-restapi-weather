@@ -71,9 +71,9 @@ public class ContentServer {
     }
     out.println(csID + "\r" + msg);
     System.err.println(csID);
-    // System.err.println((int) (Math.random() * 1000));
+
     String res = in.readLine();
-    lc.recieveEvent(lc.getTime());
+    lc.receiveEvent(lc.getTime());
     return res;
   }
 
