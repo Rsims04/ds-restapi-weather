@@ -8,6 +8,7 @@ package build;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Date;
 
 class AggregationServerThread extends Thread {
 
@@ -53,10 +54,11 @@ class AggregationServerThread extends Thread {
     String header = "";
     String type = "";
     String message = "";
+    Date date = new Date();
 
     switch (code) {
       case (200):
-        type = "text/html; charset=utf-8";
+        type = "text/plain; charset=UTF-8";
         message = "OK";
         break;
       case (204):
@@ -73,28 +75,30 @@ class AggregationServerThread extends Thread {
         break;
     }
 
-    header = "HTTP/1.1 " + code + " " + message;
+    header = "HTTP/1.1 " + code + " " + message + "\r\n";
     if (type != null) {
-      header += "\nContent-Type: " + "application/" + type;
-      header += "\nContent-Language: en";
+      header += "Date: " + date + "\r\n";
+      header += "Content-Type: " + type + "\r\n";
+      header += "Content-Language: en" + "\r\n";
     }
-    header += "\r\r";
+    header += "\r\n";
     return header;
   }
 
   public String processGET(String stationID) throws IOException {
     String response = "";
-    // '/' GET all weather data
+    // GET all weather data
     if (stationID == null) {
       System.out.println("Getting /");
       if (localStorage.getNumEntries(stationID) < 1) {
-        response = "204 - No Content";
+        response = craftHeader(204);
       } else {
         ArrayList<String> jsons = localStorage.getAllCurrentEntries();
         response = craftHeader(200);
         for (String json : jsons) {
-          response += j.fromJSON(json) + "\n\n";
+          response += j.fromJSON(json);
         }
+        response = response.strip();
       }
     } else {
       // GET weather data for specific station

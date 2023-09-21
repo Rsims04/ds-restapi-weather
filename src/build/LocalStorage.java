@@ -90,12 +90,9 @@ public class LocalStorage {
       try (BufferedReader bufferedReader = Files.newBufferedReader(file)) {
         String line = bufferedReader.readLine();
         if (stationID == null) {
-          System.out.println("SID is null");
-          System.out.println(line);
           while (line != null) {
             if (line.contains("id")) {
               numEntries++;
-              System.out.println("processing...");
             }
             line = bufferedReader.readLine();
           }

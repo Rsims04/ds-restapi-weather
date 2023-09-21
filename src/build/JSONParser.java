@@ -53,7 +53,6 @@ public class JSONParser {
           System.out.println(jsonObject);
           line = bufferedReader.readLine();
           if (line == null) {
-            System.out.println("NULL ALERT!!!");
             break;
           } else {
             jsonObject = "{";
@@ -80,7 +79,6 @@ public class JSONParser {
         }
         jsonObject += "\n\t" + key + " : " + value + ",";
         line = bufferedReader.readLine();
-        // System.out.println("AFTER: " + line);
       }
       // Remove trailing comma
       jsonObject = jsonObject.substring(0, jsonObject.length() - 1);
@@ -112,7 +110,6 @@ public class JSONParser {
 
         jsonText += key + ":" + value + "\n";
       }
-      jsonText = jsonText.substring(0, jsonText.length() - 1);
     }
     return jsonText;
   }
