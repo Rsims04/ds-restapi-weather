@@ -49,6 +49,39 @@ class AggregationServerThread extends Thread {
     return null;
   }
 
+  public String craftHeader(int code) {
+    String header = "";
+    String type = "";
+    String message = "";
+
+    switch (code) {
+      case (200):
+        type = "text/html; charset=utf-8";
+        message = "OK";
+        break;
+      case (204):
+        type = null;
+        message = "No Content";
+        break;
+      case (400):
+        type = "application/json";
+        message = "Bad Request";
+        break;
+      case (500):
+        type = null;
+        message = "Internal Server Error";
+        break;
+    }
+
+    header = "HTTP/1.1 " + code + " " + message;
+    if (type != null) {
+      header += "\nContent-Type: " + "application/" + type;
+      header += "\nContent-Language: en";
+    }
+    header += "\r\r";
+    return header;
+  }
+
   public String processGET(String stationID) throws IOException {
     String response = "";
     // '/' GET all weather data
@@ -58,18 +91,18 @@ class AggregationServerThread extends Thread {
         response = "204 - No Content";
       } else {
         ArrayList<String> jsons = localStorage.getAllCurrentEntries();
-        response = "200 - OK";
+        response = craftHeader(200);
         for (String json : jsons) {
-          response += "\n\n" + j.fromJSON(json);
+          response += j.fromJSON(json) + "\n\n";
         }
       }
     } else {
       // GET weather data for specific station
       if (localStorage.getNumEntries(stationID) < 1) {
-        response = "204 - No Content";
+        response = craftHeader(204);
       } else {
         response = localStorage.getCurrentEntry(stationID);
-        response = "200 - OK\n\n" + j.fromJSON(response);
+        response = craftHeader(200) + j.fromJSON(response);
       }
     }
     return response;
@@ -110,10 +143,11 @@ class AggregationServerThread extends Thread {
    */
   @Override
   public synchronized void run() {
-    while (true) {
-      String line;
-      try {
-        PrintWriter writer = new PrintWriter(out, true);
+    try {
+      PrintWriter writer = new PrintWriter(out, true);
+      String response = "";
+      while (true) {
+        String line;
         line = in.readLine();
 
         if (line == null) {
@@ -123,10 +157,7 @@ class AggregationServerThread extends Thread {
         if (line.contains("GET") && !line.contains("favicon")) {
           // Process Client GET Request
           stationID = extractStationID(line);
-          String response = processGET(stationID);
-
-          // Send Weather Data To Client
-          writer.println(response);
+          response = processGET(stationID);
           break;
         } else if (line.contains("PUT")) {
           // Process Content Server PUT Request
@@ -144,30 +175,33 @@ class AggregationServerThread extends Thread {
             if (j.validateJSON(jsonObject)) {
               if (this.localStorage.exists()) {
                 this.localStorage.getStore();
-                writer.println("200 - OK");
+                response = craftHeader(200);
               } else {
                 this.localStorage.createStore();
-                writer.println("201 - HTTP_CREATED");
+                response = craftHeader(201);
               }
               localStorage.updateStore(jsonObject, csID);
               break;
             } else {
-              writer.println("500 - Internal server error");
+              response = craftHeader(500);
             }
           } else {
             // Sending no content to the server
-            writer.println("204 - No Content");
+            response = craftHeader(204);
             break;
           }
         } else {
-          // Returns Status 400
-          writer.println("400 - Bad Request");
-          continue;
+          // Bad Request
+          response = craftHeader(400);
+          break;
         }
-      } catch (IOException e) {
-        e.printStackTrace();
       }
+      // Send Response/Data To Client
+      writer.println(response);
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+
     try {
       System.out.println("\n--- \nThread " + threadID + " Closed\n---\n");
       in.close();

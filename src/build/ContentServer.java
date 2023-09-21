@@ -136,9 +136,11 @@ public class ContentServer {
         System.out.println(res);
 
         if (
-          res.equals("200 - OK") ||
-          res.equals("201 - HTTP_CREATED") ||
-          res.equals("204 - No Content")
+          res.contains("200 OK") ||
+          res.contains("201 HTTP_CREATED") ||
+          res.contains("204 No Content") ||
+          res.contains("400 Bad Request") ||
+          res.contains("500 Internal Server Error")
         ) {
           content.disconnect();
           if (index != content.putRequests.size()) {
