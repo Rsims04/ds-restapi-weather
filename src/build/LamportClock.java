@@ -1,8 +1,9 @@
+package build;
+
 /**
- * GETClient.java
+ * LamportClock.java
  * [Description Here]
  */
-package build;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

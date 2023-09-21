@@ -1,5 +1,10 @@
 package build;
 
+/**
+ * AggregationServerThread.java
+ * [Description Here]
+ */
+
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
