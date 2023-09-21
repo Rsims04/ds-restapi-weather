@@ -39,6 +39,46 @@ class AggregationServerThread extends Thread {
     this.localStorage = localStorage;
   }
 
+  public String extractStationID(String line) {
+    if (line.contains("ID")) {
+      if (line.contains("?")) {
+        return line.substring(line.indexOf("=") + 1, line.indexOf(" H"));
+      }
+      return line.substring(line.indexOf("ID"), line.indexOf(" H"));
+    }
+    return null;
+  }
+
+  public String processGET(String stationID) throws IOException {
+    String response = "";
+    // '/' GET all weather data
+    if (stationID == null) {
+      // writer.println("200 - OK");
+      System.out.println("Getting /");
+      if (localStorage.getNumEntries(stationID) < 1) {
+        response = "204 - No Content";
+      } else {
+        ArrayList<String> jsons = localStorage.getAllCurrentEntries();
+        response = "200 - OK";
+        for (String json : jsons) {
+          response += "\n\n" + j.fromJSON(json);
+        }
+      }
+    } else {
+      // GET weather data for specific station
+      // Find most recent requested station data
+      // - Most recent is latest sent PUT (NOT latest received)
+
+      if (localStorage.getNumEntries(stationID) < 1) {
+        response = "204 - No Content";
+      } else {
+        response = localStorage.getCurrentEntry(stationID);
+        response = "200 - OK\n\n" + j.fromJSON(response);
+      }
+    }
+    return response;
+  }
+
   /**
    *
    */
@@ -54,52 +94,16 @@ class AggregationServerThread extends Thread {
           break;
         }
 
-        // System.out.println(line);
-
-        //
-        // Process Client GET Request
-        //
         if (line.contains("GET") && !line.contains("favicon")) {
-          // request = processGET(params);
-          String response = "";
-          if (line.contains("?")) {
-            stationID =
-              line.substring(line.indexOf("=") + 1, line.indexOf(" H"));
-          }
-
-          // '/' GET all weather data
-          if (stationID == null) {
-            // writer.println("200 - OK");
-            System.out.println("Getting /");
-            if (localStorage.getNumEntries(stationID) < 1) {
-              response = "204 - No Content";
-            } else {
-              ArrayList<String> jsons = localStorage.getAllCurrentEntries();
-              response = "200 - OK";
-              for (String json : jsons) {
-                response += "\n\n" + j.fromJSON(json);
-              }
-            }
-          } else {
-            // GET weather data for specific station
-            // Find most recent requested station data
-            // - Most recent is latest sent PUT (NOT latest received)
-
-            if (localStorage.getNumEntries(stationID) < 1) {
-              response = "204 - No Content";
-            } else {
-              response = localStorage.getCurrentEntry(stationID);
-              response = "200 - OK\n\n" + j.fromJSON(response);
-            }
-          }
+          // Process Client GET Request
+          stationID = extractStationID(line);
+          String response = processGET(stationID);
 
           // Send Weather Data To Client
           writer.println(response);
           break;
-          //
-          // Process Content Server PUT Request
-          //
         } else if (line.contains("PUT")) {
+          // Process Content Server PUT Request
           // request = processPUT();
           // Read header - validate input
           int contentLength = 0;

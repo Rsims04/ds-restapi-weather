@@ -195,10 +195,8 @@ public class LocalStorage {
   }
 
   public ArrayList<String> getAllCurrentEntries() throws IOException {
-    System.out.println("Get All Entries: ");
     ArrayList<String> jsonObjects = new ArrayList<String>();
     ArrayList<String> stationIDs = new ArrayList<String>();
-    String jsonObject = "";
 
     Path file = Paths.get("localStorage.txt");
 
@@ -218,12 +216,9 @@ public class LocalStorage {
       }
     }
 
-    System.out.println(stationIDs.size());
     for (String stationID : stationIDs) {
-      System.out.println(stationID);
       jsonObjects.add(getCurrentEntry(stationID));
     }
-    System.out.println("All entry result:\n" + jsonObject);
 
     return jsonObjects;
   }
