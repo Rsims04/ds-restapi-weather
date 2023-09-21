@@ -111,8 +111,13 @@ class AggregationServerThread extends Thread {
       } else {
         ArrayList<String> jsons = localStorage.getAllCurrentEntries();
         response = craftHeader(200);
+        int i = 1;
         for (String json : jsons) {
           response += j.fromJSON(json);
+          if (i < jsons.size()) {
+            response += '\n';
+          }
+          i++;
         }
         response = response.strip();
       }
