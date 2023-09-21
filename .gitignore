@@ -28,3 +28,7 @@ replay_pid*
 
 # VS Code
 .vscode
+
+# Program Files
+clock
+localStorage.txt
