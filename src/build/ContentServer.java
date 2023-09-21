@@ -77,15 +77,17 @@ public class ContentServer {
    */
   public String sendMsg(String msg) throws IOException {
     lc.sendEvent();
-    int clock = lc.getTime();
-    System.err.println("CLOCK: " + clock + " ; lc.time(): " + lc.getTime());
-    while (lc.getTime() != clock) {
-      System.err.println(clock + " CLOCK");
-    }
     out.println(csID + "\r" + msg);
-    System.err.println(csID);
 
-    String res = in.readLine();
+    String res = "";
+    String line = in.readLine();
+    while (true) {
+      if (line == null) {
+        break;
+      }
+      res += line + '\n';
+      line = in.readLine();
+    }
     lc.receiveEvent(lc.getTime());
     return res;
   }

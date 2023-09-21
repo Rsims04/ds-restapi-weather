@@ -70,6 +70,10 @@ class AggregationServerThread extends Thread {
         type = "text/plain; charset=UTF-8";
         message = "OK";
         break;
+      case (201):
+        type = "text/plain; charset=UTF-8";
+        message = "Created";
+        break;
       case (204):
         type = null;
         message = "No Content";
@@ -217,6 +221,7 @@ class AggregationServerThread extends Thread {
               break;
             } else {
               response = craftHeader(500);
+              break;
             }
           } else {
             // Sending no content to the server

@@ -183,7 +183,6 @@ public class LocalStorage {
    * - in JSON format.
    */
   public String getCurrentEntry(String stationID) throws IOException {
-    System.out.println("Get Entry For: " + stationID);
     ArrayList<Entry> entries = new ArrayList<Entry>();
     String jsonObject = "";
     LocalDateTime date = LocalDateTime.of(1, 1, 1, 0, 0);
@@ -208,7 +207,6 @@ public class LocalStorage {
 
           Entry entry = new Entry(jsonObject, date);
           entries.add(entry);
-          System.out.println(jsonObject);
           jsonObject = "";
         }
         line = bufferedReader.readLine();
