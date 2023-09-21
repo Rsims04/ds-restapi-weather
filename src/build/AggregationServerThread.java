@@ -2,7 +2,8 @@ package build;
 
 /**
  * AggregationServerThread.java
- * [Description Here]
+ * These thread are used to process individual requests.
+ * Return status codes 200, 201, 204, 400, 500.
  */
 
 import java.io.*;
@@ -40,6 +41,10 @@ class AggregationServerThread extends Thread {
     this.localStorage = localStorage;
   }
 
+  /**
+   * Returns stationID from input.
+   * null if none provided.
+   */
   public String extractStationID(String line) {
     if (line.contains("ID")) {
       if (line.contains("?")) {
@@ -50,6 +55,10 @@ class AggregationServerThread extends Thread {
     return null;
   }
 
+  /**
+   * Returns a formatted http header.
+   * With status code provided.
+   */
   public String craftHeader(int code) {
     String header = "";
     String type = "";
@@ -85,6 +94,13 @@ class AggregationServerThread extends Thread {
     return header;
   }
 
+  /**
+   * Processes a GET request.
+   * Returns status 204 for no content.
+   * Returns status 200 OK along with:
+   * - most current text data from requested stationID.
+   * - Most current data from all stationIDs, if no stationID provided.
+   */
   public String processGET(String stationID) throws IOException {
     String response = "";
     // GET all weather data
@@ -112,6 +128,9 @@ class AggregationServerThread extends Thread {
     return response;
   }
 
+  /**
+   * Extracts and Returns length of content from PUT header.
+   */
   public int extractContentLength(BufferedReader in, String line)
     throws IOException {
     int contentLength = 0;
@@ -126,6 +145,9 @@ class AggregationServerThread extends Thread {
     return contentLength;
   }
 
+  /**
+   *  Extracts and Returns JSON data from PUT request.
+   */
   public String extractJSON(BufferedReader in, String line, int contentLength)
     throws IOException {
     String jsonObject = "";
@@ -143,7 +165,9 @@ class AggregationServerThread extends Thread {
   }
 
   /**
-   *
+   * Will run the thread on start().
+   * Reads and processes requests.
+   * Sending a response code and message to the client.
    */
   @Override
   public synchronized void run() {
@@ -207,6 +231,7 @@ class AggregationServerThread extends Thread {
     }
 
     try {
+      // Close the inputs and outputs when done.
       System.out.println("\n--- \nThread " + threadID + " Closed\n---\n");
       in.close();
       out.close();

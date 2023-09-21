@@ -2,7 +2,10 @@ package build;
 
 /**
  * JSONParser.java
- * [Description Here]
+ * Custom JSON Parser:
+ * - Converts from File to JSON.
+ * - Converts from JSON to String.
+ * - Validates JSON objects.
  */
 
 import java.io.BufferedReader;
@@ -15,6 +18,12 @@ import java.util.Stack;
 
 public class JSONParser {
 
+  /**
+   * Checks whether string:
+   * - is float.
+   * - is integer.
+   * - else is string.
+   */
   public String isNumber(String string) {
     if (string.contains(".")) {
       try {
@@ -32,6 +41,11 @@ public class JSONParser {
     }
   }
 
+  /**
+   * Reads from file:
+   * - Formats into JSON objects.
+   * - and returns JSON object array
+   */
   public ArrayList<String> toJSON(File file) throws IOException {
     ArrayList<String> jsonStringArray = new ArrayList<String>();
     if (file.length() <= 0) {
@@ -50,7 +64,6 @@ public class JSONParser {
           jsonObject = jsonObject.substring(0, jsonObject.length() - 1);
           jsonObject += "\n" + "}";
           jsonStringArray.add(jsonObject);
-          System.out.println(jsonObject);
           line = bufferedReader.readLine();
           if (line == null) {
             break;
@@ -84,11 +97,15 @@ public class JSONParser {
       jsonObject = jsonObject.substring(0, jsonObject.length() - 1);
       jsonObject += "\n" + "}";
       jsonStringArray.add(jsonObject);
-      System.out.println(jsonObject);
     }
     return jsonStringArray;
   }
 
+  /**
+   * Read from JSON object:
+   * - Strips JSON formatting.
+   * - and converts to text.
+   */
   public String fromJSON(String jsonObject) throws IOException {
     String jsonText = "";
     BufferedReader br = new BufferedReader(new StringReader(jsonObject));
@@ -114,6 +131,11 @@ public class JSONParser {
     return jsonText;
   }
 
+  /**
+   * Parses JSON and returns:
+   * - True if valid.
+   * - False if invalid.
+   */
   public boolean validateJSON(String jsonObject) throws IOException {
     if (jsonObject.length() <= 0) {
       return false;

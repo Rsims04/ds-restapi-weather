@@ -1,5 +1,16 @@
 package build;
 
+/**
+ * Request.java
+ * Requests have:
+ * - a clock (lamport clock time)
+ * - a runnable thread
+ * - and a csID (content server ID)
+ *
+ * They can also be compared with other Requests
+ * To determine priority in a priority queue.
+ */
+
 public class Request implements Comparable<Request> {
 
   int clock;

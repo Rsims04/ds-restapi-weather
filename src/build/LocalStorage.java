@@ -2,7 +2,7 @@ package build;
 
 /**
  * LocalStorage.java
- * [Description Here]
+ * LocalStorage is used to store data in a persistant file.
  */
 
 import java.io.BufferedReader;
@@ -25,6 +25,11 @@ public class LocalStorage {
     this.numEntries = 0;
   }
 
+  /**
+   * Creates the file "localStorage",
+   * If the file exists already:
+   *  - Returns the current file.
+   */
   public File createStore() {
     try {
       File file = new File("localStorage.txt");
@@ -41,6 +46,9 @@ public class LocalStorage {
     return null;
   }
 
+  /**
+   * Returns the existing file "localStorage.txt"
+   */
   public File getStore() {
     try {
       File file = new File("localStorage.txt");
@@ -51,6 +59,11 @@ public class LocalStorage {
     return null;
   }
 
+  /**
+   * Takes in a JSON object and a content server ID (csID).
+   * Writes the JSON object to local storage.
+   * While appending the csID and current time.
+   */
   public synchronized void updateStore(String jsonObject, String csID) {
     try {
       Path file = Paths.get("localStorage.txt");
@@ -74,6 +87,9 @@ public class LocalStorage {
     }
   }
 
+  /**
+   * Check whether "localStorage.txt" exists.
+   */
   public boolean exists() {
     File file = new File("localStorage.txt");
     if (file.exists()) {
@@ -82,6 +98,12 @@ public class LocalStorage {
     return false;
   }
 
+  /**
+   * Returns the number of entries:
+   * - Of provided stationID
+   * Or if stationID is null
+   * - Of all entries.
+   */
   public int getNumEntries(String stationID) throws IOException {
     numEntries = 0;
     Path file = Paths.get("localStorage.txt");
@@ -109,6 +131,11 @@ public class LocalStorage {
     return numEntries;
   }
 
+  /**
+   * Deletes all entries
+   * - That have a specified csID.
+   * - Or are greater than 30 seconds old.
+   */
   public synchronized void removeEntries(String csID) throws IOException {
     Path file = Paths.get("localStorage.txt");
     Path tmp = Paths.get("tmp");
@@ -150,6 +177,11 @@ public class LocalStorage {
     }
   }
 
+  /**
+   * Returns the most current entry:
+   * - with specified stationID.
+   * - in JSON format.
+   */
   public String getCurrentEntry(String stationID) throws IOException {
     System.out.println("Get Entry For: " + stationID);
     ArrayList<Entry> entries = new ArrayList<Entry>();
@@ -191,6 +223,10 @@ public class LocalStorage {
     return jsonObject;
   }
 
+  /**
+   * Returns Multiple entrys:
+   * - The most current entrys, from all unique stationIDs
+   */
   public ArrayList<String> getAllCurrentEntries() throws IOException {
     ArrayList<String> jsonObjects = new ArrayList<String>();
     ArrayList<String> stationIDs = new ArrayList<String>();

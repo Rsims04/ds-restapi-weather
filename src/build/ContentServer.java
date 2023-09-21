@@ -1,6 +1,11 @@
 /**
  * ContentServer.java
- * [Description Here]
+ * Content server will:
+ * - Take input from a file (weather station) through the command line.
+ * - Process inputs to JSON format.
+ * - And send each individual result to the Aggregation Server every 30 seconds.
+ *
+ * Has a Lamport Clock.
  */
 package build;
 
@@ -26,6 +31,9 @@ public class ContentServer {
 
   public ContentServer() {}
 
+  /**
+   * Connect to server at specified ip, port.
+   */
   public void connect(String ip, int port)
     throws UnknownHostException, IOException {
     this.contentSocket = new Socket(ip, port);
@@ -62,6 +70,11 @@ public class ContentServer {
     }
   }
 
+  /**
+   * Send message to server.
+   * Update Lamport Clock.
+   * Returns response.
+   */
   public String sendMsg(String msg) throws IOException {
     lc.sendEvent();
     int clock = lc.getTime();
@@ -77,6 +90,9 @@ public class ContentServer {
     return res;
   }
 
+  /**
+   * Disconnects and closes connection.
+   */
   public void disconnect() throws IOException {
     this.in.close();
     this.out.close();
@@ -90,6 +106,7 @@ public class ContentServer {
     int portNumber = 4567;
 
     try {
+      // Gets and splits command line input for server name and port number.
       if (args.length > 0) {
         String input = args[0];
         if (input.contains("https://")) {
@@ -144,6 +161,7 @@ public class ContentServer {
         ) {
           content.disconnect();
           if (index != content.putRequests.size()) {
+            // Wait 30 seconds before repeat.
             Thread.sleep(30000);
           }
         }

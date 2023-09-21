@@ -2,7 +2,11 @@ package build;
 
 /**
  * Entry.java
- * [Description Here]
+ * An Entry stores:
+ * - a jsonObject
+ * - and a date
+ *
+ * Used in local storage.
  */
 import java.time.LocalDateTime;
 

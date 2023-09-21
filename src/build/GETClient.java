@@ -1,6 +1,14 @@
 /**
  * GETClient.java
- * [Description Here]
+ * Takes in from command line the following:
+ * - Address
+ * - Port Number
+ * - [optional] stationID
+ *
+ * Connects to and sends a GET request to the aggregation server
+ * on specified port, for the current weather data (of stationID if specified).
+ *
+ * Prints out response.
  */
 package build;
 
@@ -20,6 +28,9 @@ public class GETClient {
 
   public GETClient() {}
 
+  /**
+   * Try to connect to server at ip, port.
+   */
   public void connect(String ip, int port)
     throws UnknownHostException, IOException {
     this.clientSocket = new Socket(ip, port);
@@ -28,6 +39,10 @@ public class GETClient {
       new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
   }
 
+  /**
+   * Send a message to connection.
+   * Returns the response.
+   */
   public String sendMsg(String msg) throws IOException {
     out.println(msg);
 
@@ -43,6 +58,9 @@ public class GETClient {
     return res;
   }
 
+  /**
+   * Disconnects and closes connection.
+   */
   public void disconnect() throws IOException {
     this.in.close();
     this.out.close();
@@ -57,6 +75,7 @@ public class GETClient {
     String stationID = "";
 
     try {
+      // Split input to get: servername, portnumber and stationID
       if (args.length > 0) {
         String input = args[0];
         if (input.contains("https://")) {
@@ -87,9 +106,10 @@ public class GETClient {
       e.printStackTrace();
     }
 
+    // Connect to server
     client.connect(serverName, portNumber);
+    // Print response
     System.out.println(client.sendMsg("GET /" + stationID + " HTTP/1.1"));
-
     client.disconnect();
   }
 }

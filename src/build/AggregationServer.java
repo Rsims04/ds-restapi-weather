@@ -1,6 +1,9 @@
 /**
  * AggregationServer.java
- * [Description Here]
+ * The Aggregation Server will receive GET and PUT requests.
+ * Place them in a priority queue using Lamport Clocks to determine order.
+ * Then process each individual request in a new thread.
+ * Also responsible for cleaning expired entries in local storage.
  */
 package build;
 
@@ -24,6 +27,10 @@ public class AggregationServer {
 
   public AggregationServer() {}
 
+  /**
+   * Extracts and returns the content servers ID.
+   * null if GET request.
+   */
   public String extractID(BufferedReader in) throws IOException {
     in.mark(1);
     String s = in.readLine();
@@ -35,6 +42,10 @@ public class AggregationServer {
     return s;
   }
 
+  /**
+   * Start a 30 second timer.
+   * After expired, removes all entries from provided csID in local storage.
+   */
   public void startTimer(String csID, LocalStorage localStorage) {
     TimerTask task = new TimerTask() {
       public void run() {
@@ -54,6 +65,11 @@ public class AggregationServer {
     timer.schedule(task, delay);
   }
 
+  /**
+   * Listens on provided port for client connections.
+   * Processes requests threads in queue ordered by Lamport Clocks.
+   * Starts 30 second timer when request is received.
+   */
   public void start(int port) throws IOException {
     // Does local storage exist?
     if (this.localStorage.exists()) {
@@ -118,11 +134,14 @@ public class AggregationServer {
 
   public static void main(String[] args) throws IOException {
     try {
+      // Default port
       int port = 4567;
       if (args.length > 0) {
+        // Command line provided port
         port = Integer.parseInt(args[0]);
       }
       AggregationServer server = new AggregationServer();
+      // Start server
       server.start(port);
     } catch (IOException e) {
       e.printStackTrace();
