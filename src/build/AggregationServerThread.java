@@ -79,6 +79,37 @@ class AggregationServerThread extends Thread {
     return response;
   }
 
+  public int extractContentLength(BufferedReader in, String line)
+    throws IOException {
+    int contentLength = 0;
+    while (!line.equals("")) {
+      System.err.println(line);
+      line = in.readLine();
+      // Extract Content Length
+      if (line.contains("Content-Length")) {
+        contentLength = Integer.parseInt(line.replaceAll("\\D+", ""));
+      }
+    }
+    // line = in.readLine();
+    return contentLength;
+  }
+
+  public String extractJSON(BufferedReader in, String line, int contentLength)
+    throws IOException {
+    String jsonObject = "";
+    int readLength = 0;
+    while (readLength <= contentLength || line == null) {
+      line += "\n";
+      jsonObject += line;
+      readLength += line.getBytes().length;
+
+      if (readLength < contentLength) {
+        line = in.readLine();
+      }
+    }
+    return jsonObject;
+  }
+
   /**
    *
    */
@@ -104,37 +135,18 @@ class AggregationServerThread extends Thread {
           break;
         } else if (line.contains("PUT")) {
           // Process Content Server PUT Request
-          // request = processPUT();
-          // Read header - validate input
-          int contentLength = 0;
-          while (!line.equals("")) {
-            System.err.println(line);
-            line = in.readLine();
-            // Extract Content Length
-            if (line.contains("Content-Length")) {
-              contentLength = Integer.parseInt(line.replaceAll("\\D+", ""));
-            }
-          }
-          line = in.readLine();
+          int contentLength = extractContentLength(in, line);
 
           // Extract JSON object from input
+          String jsonObject = "";
+          line = in.readLine();
           if (line.contains("{")) {
-            String jsonObject = "";
-            int readLength = 0;
-            while (readLength <= contentLength || line == null) {
-              line += "\n";
-              jsonObject += line;
-              readLength += line.getBytes().length;
+            jsonObject = extractJSON(in, line, contentLength);
 
-              if (readLength < contentLength) {
-                line = in.readLine();
-              }
-            }
             System.err.println("\n" + jsonObject);
 
-            // Check if valid JSON
+            // If valid JSON create/update local storage file
             if (j.validateJSON(jsonObject)) {
-              // If valid create/update local storage file
               if (this.localStorage.exists()) {
                 this.localStorage.getStore();
                 writer.println("200 - OK");
