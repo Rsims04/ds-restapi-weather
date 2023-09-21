@@ -53,7 +53,6 @@ class AggregationServerThread extends Thread {
     String response = "";
     // '/' GET all weather data
     if (stationID == null) {
-      // writer.println("200 - OK");
       System.out.println("Getting /");
       if (localStorage.getNumEntries(stationID) < 1) {
         response = "204 - No Content";
@@ -66,9 +65,6 @@ class AggregationServerThread extends Thread {
       }
     } else {
       // GET weather data for specific station
-      // Find most recent requested station data
-      // - Most recent is latest sent PUT (NOT latest received)
-
       if (localStorage.getNumEntries(stationID) < 1) {
         response = "204 - No Content";
       } else {
@@ -90,7 +86,6 @@ class AggregationServerThread extends Thread {
         contentLength = Integer.parseInt(line.replaceAll("\\D+", ""));
       }
     }
-    // line = in.readLine();
     return contentLength;
   }
 
