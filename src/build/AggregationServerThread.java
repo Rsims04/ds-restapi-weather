@@ -2,6 +2,7 @@ package build;
 
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 
 class AggregationServerThread extends Thread {
 
@@ -11,7 +12,6 @@ class AggregationServerThread extends Thread {
   private BufferedReader in;
   private PrintWriter out;
   private LocalStorage localStorage;
-  private File localFile;
   private String stationID;
   JSONParser j = new JSONParser();
 
@@ -24,8 +24,7 @@ class AggregationServerThread extends Thread {
     Socket clientSocket,
     BufferedReader in,
     PrintWriter out,
-    LocalStorage localStorage,
-    File localFile
+    LocalStorage localStorage
   ) {
     this.csID = csID;
     this.threadID = threadID;
@@ -33,7 +32,6 @@ class AggregationServerThread extends Thread {
     this.in = in;
     this.out = out;
     this.localStorage = localStorage;
-    this.localFile = localFile;
   }
 
   /**
@@ -57,6 +55,7 @@ class AggregationServerThread extends Thread {
         // Process Client GET Request
         //
         if (line.contains("GET") && !line.contains("favicon")) {
+          // request = processGET(params);
           String response = "";
           if (line.contains("?")) {
             stationID =
@@ -65,10 +64,19 @@ class AggregationServerThread extends Thread {
 
           // '/' GET all weather data
           if (stationID == null) {
-            writer.println("200 - OK");
+            // writer.println("200 - OK");
             System.out.println("Getting /");
+            if (localStorage.getNumEntries(stationID) < 1) {
+              response = "204 - No Content";
+            } else {
+              ArrayList<String> jsons = localStorage.getAllCurrentEntries();
+              response = "200 - OK";
+              for (String json : jsons) {
+                response += "\n\n" + j.fromJSON(json);
+              }
+            }
           } else {
-            // '/?stationID=STATIONID' GET weather data for specific station
+            // GET weather data for specific station
             // Find most recent requested station data
             // - Most recent is latest sent PUT (NOT latest received)
 
@@ -87,6 +95,7 @@ class AggregationServerThread extends Thread {
           // Process Content Server PUT Request
           //
         } else if (line.contains("PUT")) {
+          // request = processPUT();
           // Read header - validate input
           int contentLength = 0;
           while (!line.equals("")) {
@@ -115,15 +124,13 @@ class AggregationServerThread extends Thread {
             System.err.println("\n" + jsonObject);
 
             // Check if valid JSON
-            // JSONParser j = new JSONParser();
-            System.err.println(j.validateJSON(jsonObject));
             if (j.validateJSON(jsonObject)) {
               // If valid create/update local storage file
               if (this.localStorage.exists()) {
-                this.localFile = this.localStorage.getStore();
+                this.localStorage.getStore();
                 writer.println("200 - OK");
               } else {
-                this.localFile = this.localStorage.createStore();
+                this.localStorage.createStore();
                 writer.println("201 - HTTP_CREATED");
               }
               localStorage.updateStore(jsonObject, csID);
@@ -136,14 +143,6 @@ class AggregationServerThread extends Thread {
             writer.println("204 - No Content");
             break;
           }
-          // Your server is designed to stay current
-          // and will remove any items in the JSON
-          // that have come from content servers which
-          // it has not communicated with for 30 seconds
-
-          // then before the content server lost connection,
-          // - all other succeed response should use 200
-
         } else {
           // Returns Status 400
           writer.println("400 - Bad Request");

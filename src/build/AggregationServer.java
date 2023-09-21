@@ -27,8 +27,6 @@ public class AggregationServer {
   public String extractID(BufferedReader in) throws IOException {
     in.mark(1);
     String s = in.readLine();
-    System.err.println("S: " + s);
-    // System.exit(0);
     if (s.contains("GET")) {
       in.reset();
       return null;
@@ -88,8 +86,7 @@ public class AggregationServer {
           clientSocket,
           in,
           out,
-          localStorage,
-          localFile
+          localStorage
         );
         threadCount++;
 

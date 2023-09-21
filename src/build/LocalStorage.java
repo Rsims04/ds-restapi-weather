@@ -3,11 +3,12 @@ package build;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -38,7 +39,6 @@ public class LocalStorage {
   public File getStore() {
     try {
       File file = new File("localStorage.txt");
-      System.out.println("File found: " + file.getName() + ".");
       return file;
     } catch (Exception e) {
       e.printStackTrace();
@@ -48,24 +48,20 @@ public class LocalStorage {
 
   public synchronized void updateStore(String jsonObject, String csID) {
     try {
+      Path file = Paths.get("localStorage.txt");
       LocalDateTime date = LocalDateTime.now();
-      // DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
-      //   "yyyy MM dd ss AA"
-      // );
-      // String dateString = date.format(formatter);
-      // int valueOffset = 8;
-      // String id = jsonObject.substring(
-      //   jsonObject.indexOf("\"id\"") + valueOffset,
-      //   jsonObject.indexOf("\",\n")
-      // );
-      // id.replace("\"id\" : \"", "");
-      FileWriter fileWriter = new FileWriter("localStorage.txt", true);
-      fileWriter.write(csID + ";" + date + '\n');
-      fileWriter.write(jsonObject);
+
+      BufferedWriter fileWriter = Files.newBufferedWriter(
+        file,
+        StandardOpenOption.APPEND,
+        StandardOpenOption.CREATE
+      );
+      fileWriter.append(csID + ";" + date + '\n');
+      fileWriter.append(jsonObject);
       fileWriter.close();
       numEntries++;
       System.out.println(
-        "Successfully wrote to the file. " + numEntries + " Entries."
+        "Successfully wrote to the " + file + ". " + numEntries + " Entries."
       );
     } catch (IOException e) {
       System.out.println("An error occurred.");
@@ -83,18 +79,28 @@ public class LocalStorage {
 
   public int getNumEntries(String stationID) throws IOException {
     numEntries = 0;
-    File file = new File("localStorage.txt");
+    Path file = Paths.get("localStorage.txt");
 
     if (this.exists()) {
-      try (
-        BufferedReader bufferedReader = Files.newBufferedReader(file.toPath())
-      ) {
+      try (BufferedReader bufferedReader = Files.newBufferedReader(file)) {
         String line = bufferedReader.readLine();
-        while (line != null) {
-          if (line.contains(stationID)) {
-            numEntries++;
+        if (stationID == null) {
+          System.out.println("SID is null");
+          System.out.println(line);
+          while (line != null) {
+            if (line.contains("id")) {
+              numEntries++;
+              System.out.println("processing...");
+            }
+            line = bufferedReader.readLine();
           }
-          line = bufferedReader.readLine();
+        } else {
+          while (line != null) {
+            if (line.contains(stationID)) {
+              numEntries++;
+            }
+            line = bufferedReader.readLine();
+          }
         }
       }
     }
@@ -102,7 +108,6 @@ public class LocalStorage {
   }
 
   public synchronized void removeEntries(String csID) throws IOException {
-    // System.out.println("Remove : csID : " + csID);
     Path file = Paths.get("localStorage.txt");
     Path tmp = Paths.get("tmp");
 
@@ -110,9 +115,16 @@ public class LocalStorage {
       BufferedReader bufferedReader = Files.newBufferedReader(file);
       BufferedWriter writer = Files.newBufferedWriter(tmp);
     ) {
+      LocalDateTime date = LocalDateTime.now();
       String line = bufferedReader.readLine();
       while (line != null) {
-        if (line.contains(csID)) {
+        if (line.contains(";")) {
+          date = LocalDateTime.parse(line.split(";")[1]);
+        }
+        if (
+          line.contains(csID) ||
+          Duration.between(date, LocalDateTime.now()).toSeconds() > 30
+        ) {
           while (!line.equals("}")) {
             line = bufferedReader.readLine();
             continue;
@@ -153,24 +165,18 @@ public class LocalStorage {
           date = LocalDateTime.parse(dateString);
         }
         if (line.contains(stationID)) {
-          System.out.println(line);
-
           jsonObject += "{" + '\n';
           while (!line.equals("}")) {
             jsonObject += line + '\n';
             line = bufferedReader.readLine();
-            // System.out.println("l : " + line);
-            if (line == null) {
-              break;
-            }
           }
           jsonObject += "}" + '\n';
 
           Entry entry = new Entry(jsonObject, date);
           entries.add(entry);
+          System.out.println(jsonObject);
           jsonObject = "";
         }
-
         line = bufferedReader.readLine();
       }
       date = LocalDateTime.of(1, 1, 1, 1, 1);
@@ -180,19 +186,40 @@ public class LocalStorage {
         }
       }
     }
-
-    // System.out.println("Returning: " + jsonObject);
     return jsonObject;
   }
-}
 
-class Entry {
+  public ArrayList<String> getAllCurrentEntries() throws IOException {
+    System.out.println("Get All Entries: ");
+    ArrayList<String> jsonObjects = new ArrayList<String>();
+    ArrayList<String> stationIDs = new ArrayList<String>();
+    String jsonObject = "";
 
-  String jsonObject;
-  LocalDateTime date;
+    Path file = Paths.get("localStorage.txt");
 
-  Entry(String jsonObject, LocalDateTime date) {
-    this.jsonObject = jsonObject;
-    this.date = date;
+    try (BufferedReader bufferedReader = Files.newBufferedReader(file);) {
+      String line = bufferedReader.readLine();
+      while (line != null) {
+        if (line.contains("\"id\"")) {
+          String stationID = line.substring(
+            line.indexOf("\"ID") + 1,
+            line.indexOf("\",")
+          );
+          if (!stationIDs.contains(stationID)) {
+            stationIDs.add(stationID);
+          }
+        }
+        line = bufferedReader.readLine();
+      }
+    }
+
+    System.out.println(stationIDs.size());
+    for (String stationID : stationIDs) {
+      System.out.println(stationID);
+      jsonObjects.add(getCurrentEntry(stationID));
+    }
+    System.out.println("All entry result:\n" + jsonObject);
+
+    return jsonObjects;
   }
 }

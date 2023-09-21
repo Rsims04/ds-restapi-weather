@@ -87,9 +87,7 @@ public class JSONParser {
   }
 
   public String fromJSON(String jsonObject) throws IOException {
-    // System.out.println("From JSON");
     String jsonText = "";
-    // LinkedHashMap<String, String> jsonHashMap = new LinkedHashMap<String, String>();
     BufferedReader br = new BufferedReader(new StringReader(jsonObject));
     String line = br.readLine();
 
@@ -109,8 +107,7 @@ public class JSONParser {
 
         jsonText += key + ":" + value + "\n";
       }
-      // System.out.println(jsonText);
-      return jsonText.substring(0, jsonText.length() - 1);
+      jsonText = jsonText.substring(0, jsonText.length() - 1);
     }
     return jsonText;
   }
