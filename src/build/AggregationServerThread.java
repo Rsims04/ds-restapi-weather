@@ -220,6 +220,7 @@ class AggregationServerThread extends Thread {
               localStorage.updateStore(jsonObject, csID);
               break;
             } else {
+              // Internal Server Error
               response = craftHeader(500);
               break;
             }

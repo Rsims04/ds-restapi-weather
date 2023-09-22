@@ -113,7 +113,9 @@ public class AggregationServer {
         // Lamport Clocks to determine order
         if (!queue.isEmpty()) {
           for (Request request : queue) {
-            System.err.println("request: " + request.clock);
+            System.err.println(
+              "request: " + request.csID + "| clock: " + request.clock
+            );
           }
           Request request = queue.peek();
           lc.receiveEvent(lc.getTime());
