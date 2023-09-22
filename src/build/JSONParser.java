@@ -73,7 +73,7 @@ public class JSONParser {
           }
         }
         String[] keyValPair = line.split(":");
-        String key = "\"" + keyValPair[0].strip() + "\"";
+        String key = "\"" + keyValPair[0].trim() + "\"";
         Object value = new Object();
         if (!keyValPair[0].contains("date")) {
           switch (isNumber(keyValPair[1])) {
@@ -84,11 +84,11 @@ public class JSONParser {
               value = Float.parseFloat(keyValPair[1]);
               break;
             default:
-              value = String.valueOf("\"" + keyValPair[1].strip() + "\"");
+              value = String.valueOf("\"" + keyValPair[1].trim() + "\"");
               break;
           }
         } else {
-          value = String.valueOf("\"" + keyValPair[1].strip() + "\"");
+          value = String.valueOf("\"" + keyValPair[1].trim() + "\"");
         }
         jsonObject += "\n\t" + key + " : " + value + ",";
         line = bufferedReader.readLine();
@@ -121,8 +121,8 @@ public class JSONParser {
         }
 
         String keyValPair[] = line.split(":");
-        String key = keyValPair[0].replace("\"", "").strip();
-        String value = keyValPair[1].replace(",", "").strip();
+        String key = keyValPair[0].replace("\"", "").trim();
+        String value = keyValPair[1].replace(",", "").trim();
         value = value.replace("\"", "");
 
         jsonText += key + ":" + value + "\n";

@@ -152,7 +152,7 @@ public class LocalStorage {
         }
         if (
           line.contains(csID) ||
-          Duration.between(date, LocalDateTime.now()).toSeconds() > 30
+          Duration.between(date, LocalDateTime.now()).getSeconds() > 30
         ) {
           while (!line.equals("}")) {
             line = bufferedReader.readLine();

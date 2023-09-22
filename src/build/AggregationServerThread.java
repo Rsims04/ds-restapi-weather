@@ -123,7 +123,7 @@ class AggregationServerThread extends Thread {
           }
           i++;
         }
-        response = response.strip();
+        response = response.trim();
       }
     } else {
       // GET weather data for specific station
