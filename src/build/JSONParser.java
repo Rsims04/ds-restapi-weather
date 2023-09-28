@@ -72,7 +72,7 @@ public class JSONParser {
             System.out.println(line);
           }
         }
-        String[] keyValPair = line.split(":");
+        String[] keyValPair = line.split(":", 2);
         String key = "\"" + keyValPair[0].trim() + "\"";
         Object value = new Object();
         if (!keyValPair[0].contains("date")) {
@@ -88,6 +88,8 @@ public class JSONParser {
               break;
           }
         } else {
+          System.out.println("f: " + keyValPair[0]);
+          System.out.println("h: " + keyValPair[1]);
           value = String.valueOf("\"" + keyValPair[1].trim() + "\"");
         }
         jsonObject += "\n\t" + key + " : " + value + ",";
@@ -120,7 +122,7 @@ public class JSONParser {
           break;
         }
 
-        String keyValPair[] = line.split(":");
+        String keyValPair[] = line.split(":", 2);
         String key = keyValPair[0].replace("\"", "").trim();
         String value = keyValPair[1].replace(",", "").trim();
         value = value.replace("\"", "");
@@ -202,6 +204,7 @@ public class JSONParser {
     // jo += j.toJSON(f);
 
     String jo = j.toJSON(f).get(0);
+    System.out.println(jo);
 
     // System.out.println(j.validateJSON(jo));
     // LinkedHashMap<String, String> lhm = j.fromJSON(jo);
