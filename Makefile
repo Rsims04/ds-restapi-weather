@@ -40,12 +40,6 @@ all_tests := $(OUTPUT_DIR)/all.tests
 compile: $(all_javas)
 	$(JC) $(JFLAGS) @$<
 
-# .PHONY: compiletests
-# compiletests: $(all_tests)
-# 	$(JC) $(JFLAGS) @$<
-# 	$(JC) $(TESTFLAGS) $(all_tests)
-# 	# $(JC) $(TESTFLAGS) $(SOURCE_TEST_DIR)/*.java src/build/*.java -d dest
-
 # all_javas - Gather source file list
 .INTERMEDIATE: $(all_javas)
 $(all_javas):
@@ -55,9 +49,13 @@ $(all_javas):
 $(all_tests):
 	$(FIND) $(SOURCE_TEST_DIR) -name '*Test.java' > $@
 
-TEST_SOURCE := test.CalculatorImplementationTest \
-test.CalculatorClientTest \
-test.CalculatorServerTest
+TEST_SOURCE := test.AggregationServerTest \
+test.AggregationServerThreadTest \
+test.ContentServerTest \
+test.GETClientTest \
+test.JSONParserTest \
+test.LamportClockTest \
+test.LocalStorageTest \
 
 .PHONY: test
 test:
@@ -82,10 +80,14 @@ print:
 
 .PHONY: client
 client:
-	$(JVM) build.CalculatorClient
+	$(JVM) build.GETClient
 
 .PHONY: server
 server:
-	$(JVM) build.CalculatorServer
+	$(JVM) build.AggregationServer
+
+.PHONY: content
+content:
+	$(JVM) build.ContentServer
 
 
