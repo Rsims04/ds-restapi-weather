@@ -170,6 +170,7 @@ public class JSONParser {
           if (previous != '{') {
             return false;
           } else {
+            stack.pop();
             break;
           }
         case '}':

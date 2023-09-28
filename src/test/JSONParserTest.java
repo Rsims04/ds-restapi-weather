@@ -139,4 +139,32 @@ public class JSONParserTest {
 
     assertEquals(expected, testString);
   }
+
+  @Test
+  public void validate_json() throws IOException {
+    String jsonObject =
+      "{\n" +
+      "\t\"id\" : \"IDS60901\",\n" +
+      "\t\"name\" : \"Adelaide (West Terrace /  ngayirdapira)\",\n" +
+      "\t\"state\" : \"SA\",\n" +
+      "\t\"time_zone\" : \"CST\",\n" +
+      "\t\"lat\" : -34.9,\n" +
+      "\t\"lon\" : 138.6,\n" +
+      "\t\"local_date_time\" : \"15/04:00pm\",\n" +
+      "\t\"local_date_time_full\" : \"20230715160000\",\n" +
+      "\t\"air_temp\" : 13.3,\n" +
+      "\t\"apparent_t\" : 9.5,\n" +
+      "\t\"cloud\" : \"Partly cloudy\",\n" +
+      "\t\"dewpt\" : 5.7,\n" +
+      "\t\"press\" : 1023.9,\n" +
+      "\t\"rel_hum\" : 60,\n" +
+      "\t\"wind_dir\" : \"S\",\n" +
+      "\t\"wind_spd_kmh\" : 15,\n" +
+      "\t\"wind_spd_kt\" : 8\n" +
+      "}";
+
+    Boolean testBool = jp.validateJSON(jsonObject);
+
+    assertEquals(true, testBool);
+  }
 }
