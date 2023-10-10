@@ -1,0 +1,19 @@
+#!/bin/bash
+
+hostAndPort=''
+stationID=''
+
+echo "Running GETClient"
+
+if [ ! -z $1 ]; then
+    hostAndPort=$1
+    echo "Host/Port: ${hostAndPort}"
+fi
+
+if [ ! -z $2 ]; then
+    stationID=$2
+    echo "StationID: ${stationID}"
+fi
+    
+echo "====================="
+java -cp dest build.GETClient ${hostAndPort} ${stationID}

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+port='4567'
+if [ ! -z $1 ]; then
+    port=$1
+fi
+    
+echo "Running Aggregation Server, on port ${port}"
+echo "====================="
+java -cp dest build.AggregationServer ${port}

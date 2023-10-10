@@ -1,0 +1,19 @@
+#!/bin/bash
+
+hostAndPort=''
+inputFile=''
+
+echo "Running ContentServer"
+
+if [ ! -z $1 ]; then
+    hostAndPort=$1
+    echo "Host/Port: ${hostAndPort}"
+fi
+
+if [ ! -z $2 ] && [ -f $2 ]; then
+    inputFile=$2
+    echo "StationID: ${inputFile}"
+fi
+    
+echo "====================="
+java -cp dest build.ContentServer ${hostAndPort} ${inputFile}

@@ -69,7 +69,6 @@ public class JSONParser {
             break;
           } else {
             jsonObject = "{";
-            System.out.println(line);
           }
         }
         String[] keyValPair = line.split(":", 2);
@@ -88,8 +87,6 @@ public class JSONParser {
               break;
           }
         } else {
-          System.out.println("f: " + keyValPair[0]);
-          System.out.println("h: " + keyValPair[1]);
           value = String.valueOf("\"" + keyValPair[1].trim() + "\"");
         }
         jsonObject += "\n\t" + key + " : " + value + ",";
@@ -143,6 +140,8 @@ public class JSONParser {
       return false;
     }
     Stack<Character> stack = new Stack<>();
+    boolean endFlag = false;
+    Character previous;
     for (Character token : jsonObject.toCharArray()) {
       switch (token) {
         case '{':
@@ -156,7 +155,7 @@ public class JSONParser {
           if (stack.empty()) {
             return false;
           }
-          Character previous = stack.peek();
+          previous = stack.peek();
           if (previous != '\"') {
             stack.push('\"');
             break;
@@ -167,16 +166,19 @@ public class JSONParser {
         case ',':
         case ':':
           previous = stack.peek();
+          if (previous == '\"') {
+            break;
+          }
           if (previous != '{') {
             return false;
           } else {
-            stack.pop();
             break;
           }
         case '}':
           if (stack.isEmpty()) {
             return false;
           }
+          endFlag = true;
           previous = stack.pop();
           if (previous != '{') {
             return false;
@@ -188,7 +190,7 @@ public class JSONParser {
             return false;
           }
       }
-      if (stack.isEmpty()) {
+      if (stack.isEmpty() && endFlag == true) {
         return true;
       }
     }
@@ -207,7 +209,7 @@ public class JSONParser {
     String jo = j.toJSON(f).get(0);
     System.out.println(jo);
 
-    // System.out.println(j.validateJSON(jo));
+    System.out.println(j.validateJSON(jo));
     // LinkedHashMap<String, String> lhm = j.fromJSON(jo);
     String lhm = j.fromJSON(jo);
     System.out.println(lhm);
