@@ -71,7 +71,7 @@ state: SA
 
 ## Run a GET Client
 
-To run a client, use: `./GETClient [server name:port number] [(optional)stationID]` <br/>
+To run a client, use: `./GETClient [(optional)server name:port number] [(optional)stationID]` <br/>
 Possible formats for server name and port number include: <br />
 `"http://servername.domain.domain:portnumber"`,<br/>
 `"http://servername:portnumber"`,<br/>
@@ -80,6 +80,7 @@ i.e.,
 `java -cp dest build.GETClient localhost:4567 IDS60901`. <br />
 Default servername is `localhost`.<br/>
 Default port is `4567`.<br/>
+Default stationID will get `/` or everything on the server.
 
 ## Local Storage
 
@@ -100,7 +101,17 @@ Running `make clean` will delete `build`, `localStorage` and `clock` files essen
 ## Testing
 
 (Testing is still in production)
-To run all tests, type: `make test`. <br />
+To run all Junit Unit Tests, type: `make test`. <br />
+
+### Random Input Generator
+
+I have written a random input generator: `randomInputGenerator.py`.<br/>
+To run enter `./randomInputGenerator.py`. <br/>
+You will then be prompted to enter:<br/>
+entries: How many entries per file.
+files: How many files containing the number of entries.<br/><br/>
+
+This is useful for stress testing with large amounts of data and content servers. I also used it to manually analyse the effectiveness of Lamport Clocks to maintain order with a large number of Content Servers running concurrently. Using `./startConcurrentContent`. <br/>
 
 ---
 
