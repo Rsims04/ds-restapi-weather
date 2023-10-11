@@ -108,8 +108,8 @@ To run all Junit Unit Tests, type: `make test`. <br />
 I have written a random input generator: `randomInputGenerator.py`.<br/>
 To run enter `./randomInputGenerator.py`. <br/>
 You will then be prompted to enter:<br/>
-<b>entries<b>: How many entries per file.<br/>
-<b>files<b>: How many files containing the number of entries.<br/><br/>
+<b>entries</b>: How many entries per file.<br/>
+<b>files</b>: How many files containing the number of entries.<br/><br/>
 
 This is useful for stress testing with large amounts of data and content servers. I also used it to manually analyse the effectiveness of Lamport Clocks to maintain order with a large number of Content Servers running concurrently. Using `./startConcurrentContent`. <br/>
 
