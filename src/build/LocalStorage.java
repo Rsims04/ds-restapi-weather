@@ -63,8 +63,11 @@ public class LocalStorage {
    * Takes in a JSON object and a content server ID (csID).
    * Writes the JSON object to local storage.
    * While appending the csID and current time.
+   * @throws IOException
    */
-  public synchronized void updateStore(String jsonObject, String csID) {
+  public synchronized void updateStore(String jsonObject, String csID)
+    throws IOException {
+    numEntries = getNumEntries(null);
     try {
       Path file = Paths.get("localStorage.txt");
       LocalDateTime date = LocalDateTime.now();

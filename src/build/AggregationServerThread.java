@@ -20,6 +20,7 @@ class AggregationServerThread extends Thread {
   private PrintWriter out;
   private LocalStorage localStorage;
   private String stationID;
+  private LamportClock lc = LamportClock.getInstance();
   JSONParser j = new JSONParser();
 
   /**
@@ -206,7 +207,7 @@ class AggregationServerThread extends Thread {
           if (line.contains("{")) {
             jsonObject = extractJSON(in, line, contentLength);
 
-            System.err.println("\n" + jsonObject);
+            System.err.println(jsonObject);
 
             // If valid JSON create/update local storage file
             if (j.validateJSON(jsonObject)) {

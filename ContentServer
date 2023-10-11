@@ -12,7 +12,7 @@ fi
 
 if [ ! -z $2 ] && [ -f $2 ]; then
     inputFile=$2
-    echo "StationID: ${inputFile}"
+    echo "Input File: ${inputFile}"
 fi
     
 echo "====================="

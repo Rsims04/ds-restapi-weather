@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -59,6 +60,48 @@ public class GETClient {
   }
 
   /**
+   *  Client attempts to connect to the known Server.
+   *  The client will try 3 times before giving up.
+   *  Each attempt in 10 second intervals.
+   */
+  String run(
+    GETClient client,
+    String serverName,
+    int portNumber,
+    String stationID
+  ) throws UnknownHostException, IOException {
+    String res = "";
+    int attempts = 1;
+    while (attempts <= 3) {
+      try {
+        client.connect(serverName, portNumber);
+        res = client.sendMsg("GET /" + stationID + " HTTP/1.1");
+        break;
+      } catch (ConnectException ce) {
+        if (attempts == 3) {
+          System.err.println(
+            "Attempt " + attempts + ": Could not connect. Try again later.\n---"
+          );
+          break;
+        }
+        System.err.println(
+          "Attempt " +
+          attempts +
+          ": Could not connect, trying again in 10 seconds.\n---"
+        );
+
+        try {
+          Thread.sleep(10000);
+        } catch (InterruptedException ie) {
+          ie.printStackTrace();
+        }
+      }
+      attempts++;
+    }
+    return res;
+  }
+
+  /**
    * Disconnects and closes connection.
    */
   public void disconnect() throws IOException {
@@ -82,34 +125,49 @@ public class GETClient {
           input = input.split("//*")[1];
         }
 
-        String splitInput[] = input.split(":\\.*");
-        if (splitInput.length <= 2) {
-          portNumber = Integer.parseInt(splitInput[1]);
-          serverName = splitInput[0];
-        } else {
-          portNumber = Integer.parseInt(splitInput[2]);
-          serverName = splitInput[0] + ":" + splitInput[1];
+        if (input.contains(":")) {
+          String splitInput[] = input.split(":\\.*");
+          if (splitInput.length <= 2) {
+            portNumber = Integer.parseInt(splitInput[1]);
+            serverName = splitInput[0];
+          } else {
+            portNumber = Integer.parseInt(splitInput[2]);
+            serverName = splitInput[0] + ":" + splitInput[1];
+          }
         }
 
         if (args.length > 1) {
-          stationID = "?stationID=" + args[1];
+          if (args[0].contains("IDS") || args[1].contains("IDS")) {
+            stationID = "?stationID=" + args[1];
+          } else {
+            System.out.println(
+              "(Invalid Station ID, using default)\n=====================\n"
+            );
+          }
         }
 
         try {
           InetAddress ip = InetAddress.getByName(serverName);
           serverName = ip.getHostAddress();
         } catch (UnknownHostException e) {
+          System.err.println("Cannot find host.\n---");
           e.printStackTrace();
         }
       }
     } catch (Exception e) {
+      System.err.println("Bad input.");
       e.printStackTrace();
     }
 
-    // Connect to server
-    client.connect(serverName, portNumber);
-    // Print response
-    System.out.println(client.sendMsg("GET /" + stationID + " HTTP/1.1"));
-    client.disconnect();
+    // // Connect to server
+    // client.connect(serverName, portNumber);
+
+    String res = client.run(client, serverName, portNumber, stationID);
+
+    if (res != "") {
+      // Print response
+      System.out.println(res);
+      client.disconnect();
+    }
   }
 }

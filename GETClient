@@ -1,18 +1,25 @@
 #!/bin/bash
 
-hostAndPort=''
+hostAndPort='localhost:4567'
 stationID=''
 
 echo "Running GETClient"
 
-if [ ! -z $1 ]; then
-    hostAndPort=$1
-    echo "Host/Port: ${hostAndPort}"
-fi
+if [ $# -gt 0 ]; then
+    if [ $# -gt 1 ]; then
+        if [ ! -z $1 ]; then
+            hostAndPort=$1
+            echo "Host/Port: ${hostAndPort}"
+        fi
 
-if [ ! -z $2 ]; then
-    stationID=$2
-    echo "StationID: ${stationID}"
+        if [ ! -z $2 ]; then
+            stationID=$2
+            echo "StationID: ${stationID}"
+        fi
+    else
+        stationID=$1
+            echo "StationID: ${stationID}"
+    fi
 fi
     
 echo "====================="

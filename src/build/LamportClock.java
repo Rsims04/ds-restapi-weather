@@ -18,24 +18,28 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class LamportClock {
 
-  public LamportClock() {
-    restoreClock();
+  private static Integer timeStamp = 0; // To be incremented;
+
+  public static LamportClock getInstance() {
+    return new LamportClock();
   }
 
-  private AtomicInteger timeStamp = new AtomicInteger(0); // To be incremented
+  private LamportClock() {
+    restoreClock();
+  }
 
   /**
    * Saves current timestamp to the file 'clock'.
    */
-  public synchronized void saveClock() {
+  private synchronized void saveClock(Integer time) {
     try {
       Path file = Paths.get("clock");
       BufferedWriter writer = Files.newBufferedWriter(file);
-      writer.write(Integer.toString(getTime()));
+      System.out.println("lc~saving: " + time);
+      writer.write(Integer.toString(time));
       writer.close();
     } catch (IOException e) {
       e.printStackTrace();
@@ -46,13 +50,13 @@ public class LamportClock {
    * If the file 'clock' exists
    * - Restores the timestamp
    */
-  public void restoreClock() {
+  private synchronized void restoreClock() {
     File f = new File("clock");
     if (f.exists() && f.length() != 0) {
       try {
         Path file = Paths.get("clock");
         BufferedReader reader = Files.newBufferedReader(file);
-        this.setTime(Integer.parseInt(reader.readLine()));
+        setTime(Integer.parseInt(reader.readLine()));
       } catch (IOException e) {
         e.printStackTrace();
       }
@@ -62,24 +66,26 @@ public class LamportClock {
   /**
    * Gets current timestamp
    */
-  public Integer getTime() {
-    return timeStamp.get();
+  public synchronized Integer getTime() {
+    // return instance.timeStamp.get();
+    restoreClock();
+    return timeStamp;
   }
 
   /**
    * Sets new time stamp to provided integer.
    */
-  public void setTime(Integer time) {
-    timeStamp.set(time);
+  public synchronized void setTime(Integer time) {
+    timeStamp = time;
   }
 
   /**
    * Increments timestamp by 1
    */
   public synchronized void sendEvent() {
-    timeStamp.incrementAndGet();
-    System.out.println("sendEvent - add 1: " + timeStamp);
-    saveClock();
+    setTime(getTime() + 1);
+    System.out.println("lc~sendEvent - add 1: " + timeStamp);
+    saveClock(timeStamp);
   }
 
   /**
@@ -88,8 +94,10 @@ public class LamportClock {
    * - and event time
    */
   public synchronized void receiveEvent(int eventTime) {
-    timeStamp.set(Math.max(getTime(), eventTime) + 1);
-    System.out.println("receiveEvent - add max: " + timeStamp);
-    saveClock();
+    setTime(Math.max(getTime(), eventTime) + 1);
+    System.out.println(
+      "lc~receiveEvent - add max: " + eventTime + "/" + timeStamp
+    );
+    saveClock(timeStamp);
   }
 }

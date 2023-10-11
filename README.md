@@ -8,14 +8,17 @@ To build all files, type: `make`.<br />
 
 ## Start the Aggregation Server
 
-(Still in production) To start the Aggregation server, use: `java -cp dest build.AggregationServer`.<br />
+To start the Aggregation server, use: `./AggregationServer`.<br />
+This will start the server on default host/port 4567.<br /><br />
 Aggregation Server takes one parameter:<br />
-i.e., use `java -cp dest build.AggregationServer [port number]` <br />
-This will start the server on the specified port. (default port is 4567).<br/>
+i.e., use `./AggregationServer [port number]` <br />
+example: `./AggregationServer 8080` <br />
+This will start the server on the specified port.<br/>
 
 ## Run a Content Server
 
-(Still in production) To run a Content Server, use: `java -cp dest build.ContentServer [server name and port number] [Input File]` <br/>
+To run a Content Server, use: `./ContentServer [host name:port number] [Input File]` <br/>
+example: `./ContentServer localhost:4567 input.txt` <br/><br/>
 Content Server will get input from a specified `File` (weather station), <br/>
 File must be in the format:<br/>
 
@@ -39,11 +42,36 @@ wind_spd_kmh:15
 wind_spd_kt:8
 ```
 
-Multiple entries in this format can be included in a single file with a blank line in between.<br/>
+Multiple entries in this format can be included in a single file with a blank line in between, as below.<br/>
+
+```
+id:IDS60901
+name:Adelaide (West Terrace /  ngayirdapira)
+state: SA
+time_zone:CST
+lat:-34.9
+lon:138.6
+local_date_time:15/04:00pm
+local_date_time_full:20230715160000
+air_temp:13.3
+apparent_t:9.5
+cloud:Partly cloudy
+dewpt:5.7
+press:1023.9
+rel_hum:60
+wind_dir:S
+wind_spd_kmh:15
+wind_spd_kt:8
+
+id:IDS60902
+name:Adelaide (West Terrace /  ngayirdapira)
+state: SA
+... etc
+```
 
 ## Run a GET Client
 
-(Still in production) To run a client, use: `java -cp dest build.GETClient [server name and port number] [(optional)stationID]` <br/>
+To run a client, use: `./GETClient [server name:port number] [(optional)stationID]` <br/>
 Possible formats for server name and port number include: <br />
 `"http://servername.domain.domain:portnumber"`,<br/>
 `"http://servername:portnumber"`,<br/>

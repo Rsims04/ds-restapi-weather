@@ -66,8 +66,8 @@ test:
 .PHONY: clean
 clean:
 	$(RM) $(OUTPUT_DIR)
-	rm localStorage.txt
-	rm clock
+	rm -f clock
+	rm -f localStorage.txt
 
 .PHONY: classpath
 classpath:

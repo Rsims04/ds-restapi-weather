@@ -21,7 +21,7 @@ public class AggregationServer {
   private LocalStorage localStorage = new LocalStorage();
   private PriorityQueue<Request> queue = new PriorityQueue<Request>();
   private File localFile;
-  private LamportClock lc = new LamportClock();
+  private LamportClock lc = LamportClock.getInstance();
 
   private int threadCount = 0;
 
@@ -38,8 +38,21 @@ public class AggregationServer {
       in.reset();
       return null;
     }
-
     return s;
+  }
+
+  /**
+   * Extracts and returns the content servers ID.
+   * null if GET request.
+   */
+  public Integer extractTime(BufferedReader in) throws IOException {
+    in.mark(1);
+    String s = in.readLine();
+    if (s.contains("GET")) {
+      in.reset();
+      return 0;
+    }
+    return Integer.parseInt(s);
   }
 
   /**
@@ -50,7 +63,7 @@ public class AggregationServer {
     TimerTask task = new TimerTask() {
       public void run() {
         System.out.println(
-          "Task performed on: " + new Date() + ";" + "Thread's name: " + csID
+          "Timeout: Entry " + csID + " Deleted at: " + new Date()
         );
         try {
           localStorage.removeEntries(csID);
@@ -95,6 +108,8 @@ public class AggregationServer {
         if (csID != null) {
           csID += threadID;
         }
+        Integer time = extractTime(in);
+
         System.out.println("\n---\nNew Thread - id:" + threadID + "\n---\n ");
         Thread t = new AggregationServerThread(
           csID,
@@ -107,28 +122,55 @@ public class AggregationServer {
         threadCount++;
 
         // Place in Queue
-        Request r = new Request(lc.getTime(), t, csID);
+        Request r = new Request(time, t, csID);
         queue.add(r);
 
         // Lamport Clocks to determine order
+        System.out.println("QUEUED:\n");
         if (!queue.isEmpty()) {
           for (Request request : queue) {
             System.err.println(
-              "request: " + request.csID + "| clock: " + request.clock
+              "request: " + request.csID + " | clock: " + request.clock
             );
           }
-          Request request = queue.peek();
-          lc.receiveEvent(lc.getTime());
-          if (request.clock < lc.getTime()) {
-            request = queue.remove();
-            request.thread.start();
-            if (csID != null) {
-              startTimer(request.csID, localStorage);
+
+          while (!queue.isEmpty()) {
+            Request request = queue.peek();
+            // If request is not a GET, update clock
+            if (csID != null && request.clock != 0) {
+              int serverTime = 0;
+              int attempts = 0;
+              while (attempts < 3) {
+                try {
+                  serverTime = lc.getTime();
+                  lc.receiveEvent(serverTime);
+                  serverTime = lc.getTime();
+                  break;
+                } catch (Exception e) {
+                  System.err.println("Attempting to update clock...");
+                }
+                attempts++;
+              }
+              if (request.clock < serverTime) {
+                request = queue.remove();
+                Thread.sleep(500);
+                System.out.print("\n--- starting: " + threadID + " ---\n");
+                request.thread.start();
+                startTimer(request.csID, localStorage);
+              }
+            } else {
+              request = queue.remove();
+              request.thread.start();
             }
+            request.thread.join();
           }
         }
       } catch (IOException e) {
         clientSocket.close();
+        System.err.println("IO server failure.");
+        e.printStackTrace();
+      } catch (InterruptedException e) {
+        System.err.println("Interrupt server failure.");
         e.printStackTrace();
       }
     }
@@ -146,6 +188,7 @@ public class AggregationServer {
       // Start server
       server.start(port);
     } catch (IOException e) {
+      System.err.println("Connection server failure.");
       e.printStackTrace();
     }
   }

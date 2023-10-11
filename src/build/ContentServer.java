@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -21,12 +22,12 @@ import java.util.ArrayList;
 
 public class ContentServer {
 
-  private Integer csID = (int) (Math.random() * 10000);
+  private int csID = (int) (Math.random() * 10000);
   private Socket contentSocket;
   private PrintWriter out;
   private BufferedReader in;
   private JSONParser jp = new JSONParser();
-  private LamportClock lc = new LamportClock();
+  private LamportClock lc = LamportClock.getInstance();
   private ArrayList<String> putRequests = new ArrayList<String>();
 
   public ContentServer() {}
@@ -68,28 +69,6 @@ public class ContentServer {
 
       putRequests.add(request);
     }
-  }
-
-  /**
-   * Send message to server.
-   * Update Lamport Clock.
-   * Returns response.
-   */
-  public String sendMsg(String msg) throws IOException {
-    lc.sendEvent();
-    out.println(csID + "\r" + msg);
-
-    String res = "";
-    String line = in.readLine();
-    while (true) {
-      if (line == null) {
-        break;
-      }
-      res += line + '\n';
-      line = in.readLine();
-    }
-    lc.receiveEvent(lc.getTime());
-    return res;
   }
 
   /**
@@ -150,27 +129,39 @@ public class ContentServer {
       // Send each individual request to aggregation server and await response.
       int index = 1;
       for (String request : content.putRequests) {
-        content.connect(serverName, portNumber);
-        String res = content.sendMsg(request);
-        System.out.println(res);
+        System.out.println(
+          "\n---\nNew Thread - id:" + content.csID + "\n---\n "
+        );
 
-        if (
-          res.contains("200 OK") ||
-          res.contains("201 HTTP_CREATED") ||
-          res.contains("204 No Content") ||
-          res.contains("400 Bad Request") ||
-          res.contains("500 Internal Server Error")
-        ) {
-          content.disconnect();
-          if (index != content.putRequests.size()) {
-            // Wait 30 seconds before repeat.
-            Thread.sleep(30000);
-          }
+        Thread t = new ContentServerThread(
+          serverName,
+          portNumber,
+          content.csID,
+          content,
+          content.lc,
+          content.csID,
+          // content.out,
+          // content.in,
+          request
+        );
+        System.out.print(
+          "\n--- starting: " + content.csID + "-" + index + " ---\n"
+        );
+        t.start();
+        t.join();
+
+        if (index != content.putRequests.size()) {
+          // Wait 30 seconds before repeat.
+          Thread.sleep(30000);
         }
         index++;
       }
     } catch (Exception e) {
       e.printStackTrace();
+      // content.disconnect();
     }
+
+    // content.disconnect();
+    System.exit(0);
   }
 }
