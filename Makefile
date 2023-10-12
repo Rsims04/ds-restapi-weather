@@ -73,6 +73,13 @@ clean:
 	rm -f clock
 	rm -f localStorage.txt
 
+.PHONY: cleanall
+cleanall:
+	$(RM) $(OUTPUT_DIR)
+	rm -f clock
+	rm -f localStorage.txt
+	rm -rf randInputs
+
 .PHONY: classpath
 classpath:
 	@echo CLASSPATH='$(CLASSPATH)'

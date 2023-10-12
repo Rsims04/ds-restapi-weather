@@ -10,7 +10,7 @@ if [ ! -z $1 ]; then
     echo "Host/Port: ${hostAndPort}"
 fi
 
-if [ ! -z $2 ] && [ -f $2 ]; then
+if [ ! -z $2 ]; then
     inputFile=$2
     echo "Input File: ${inputFile}"
 fi

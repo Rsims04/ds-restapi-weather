@@ -11,6 +11,7 @@ package build;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -97,7 +98,7 @@ public class ContentServer {
       // Parse file to json format.
       filePath = args[1];
     } catch (Exception e) {
-      e.printStackTrace();
+      System.out.println("Bad Input.");
     }
   }
 
@@ -106,25 +107,28 @@ public class ContentServer {
    * Splits into array (putRequests)
    */
   public void formatAndSplitRequest() throws IOException {
-    System.out.println(filePath);
     File file = new File(filePath);
-    // Need to account for multiple data in one file
-    ArrayList<String> jsonStringArray = jp.toJSON(file);
-    for (String jsonObject : jsonStringArray) {
-      // Craft Header
-      String header = "PUT /" + filePath + " HTTP/1.1\n";
-      String userAgent = "ATOMClient/1/" + csID + "\n";
-      String contentType = "application/json\n";
-      String contentLength = jsonObject.getBytes().length + "\n";
+    if (file.exists() && !file.isDirectory()) {
+      // Need to account for multiple data in one file
+      ArrayList<String> jsonStringArray = jp.toJSON(file);
+      for (String jsonObject : jsonStringArray) {
+        // Craft Header
+        String header = "PUT /" + filePath + " HTTP/1.1\n";
+        String userAgent = "ATOMClient/1/" + csID + "\n";
+        String contentType = "application/json\n";
+        String contentLength = jsonObject.getBytes().length + "\n";
 
-      header += "User-Agent: " + userAgent;
-      header += "Content-Type: " + contentType;
-      header += "Content-Length: " + contentLength;
-      header += "\n";
+        header += "User-Agent: " + userAgent;
+        header += "Content-Type: " + contentType;
+        header += "Content-Length: " + contentLength;
+        header += "\n";
 
-      String request = header + jsonObject;
+        String request = header + jsonObject;
 
-      putRequests.add(request);
+        putRequests.add(request);
+      }
+    } else {
+      System.err.println("File does not exist.");
     }
   }
 
@@ -148,7 +152,6 @@ public class ContentServer {
           threadID,
           serverName,
           portNumber,
-          csID,
           this,
           lc,
           csID,

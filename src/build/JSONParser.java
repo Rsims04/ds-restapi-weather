@@ -96,6 +96,9 @@ public class JSONParser {
       jsonObject = jsonObject.substring(0, jsonObject.length() - 1);
       jsonObject += "\n" + "}";
       jsonStringArray.add(jsonObject);
+    } catch (ArrayIndexOutOfBoundsException e) {
+      System.err.println("Bad Input.");
+      jsonStringArray.clear();
     }
     return jsonStringArray;
   }
