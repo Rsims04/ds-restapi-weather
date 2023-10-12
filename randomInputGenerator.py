@@ -108,11 +108,11 @@ if (numEntries <= LIMIT or numFiles <= LIMIT):
             
             date = {
                 "year":"2023",
-                "month":str(random.randint(00,12)),
-                "day":str(random.randint(1,31)),
-                "hour":str(random.randint(00,24)),
-                "minute":str(random.randint(00,59)),
-                "second":str(random.randint(00,59)),
+                "month":str('{:02d}'.format(random.randint(00,12))),
+                "day":str('{:02d}'.format(random.randint(1,31))),
+                "hour":str('{:02d}'.format(random.randint(00,24))),
+                "minute":str('{:02d}'.format(random.randint(00,59))),
+                "second":str('{:02d}'.format(random.randint(00,59))),
             }
             data = {
                 "id": "IDS"+id,
@@ -122,7 +122,7 @@ if (numEntries <= LIMIT or numFiles <= LIMIT):
                 "lat":str(round(random.uniform(-500,500),1)),
                 "lon":str(round(random.uniform(-500,500),1)),
                 "local_date_time":date['month']+"/"+date['hour']+":"+date['minute'],
-                "local_date_time_full":date['year']+date['month']+date['day']+date['hour']+date['minute']+date['second']+"00",
+                "local_date_time_full":date['year']+date['month']+date['day']+date['hour']+date['minute']+date['second'],
                 "air_temp":str(round(random.uniform(-2,48),1)),
                 "apparent_t":str(round(random.uniform(-2,48),1)),
                 "cloud":clouds[random.randrange(len(clouds))],

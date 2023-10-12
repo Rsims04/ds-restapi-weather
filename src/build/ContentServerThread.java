@@ -21,6 +21,7 @@ public class ContentServerThread extends Thread {
   private BufferedReader in;
   private String request;
   private Integer time;
+  private String localTime;
 
   ContentServerThread(
     String threadID,
@@ -29,7 +30,8 @@ public class ContentServerThread extends Thread {
     ContentServer content,
     LamportClock lc,
     int csID,
-    String request
+    String request,
+    String localTime
   ) {
     this.threadID = threadID;
     this.serverName = serverName;
@@ -39,6 +41,7 @@ public class ContentServerThread extends Thread {
     this.lc = LamportClock.getInstance();
     this.csID = csID;
     this.request = request;
+    this.localTime = localTime;
   }
 
   /**
@@ -68,7 +71,8 @@ public class ContentServerThread extends Thread {
    */
   public synchronized String sendMsg(String msg) throws IOException {
     out.println(threadID + "\r");
-    out.println(this.time + "\r" + msg);
+    out.println(this.time + "\r");
+    out.println(this.localTime + "\r" + msg);
 
     String res = "";
     String line = in.readLine();

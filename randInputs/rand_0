@@ -1,0 +1,18 @@
+id:IDS18120
+name:WHYALLA AERO
+state:SA
+time_zone:CST
+lat:364.7
+lon:-413.5
+local_date_time:01/17:58
+local_date_time_full:20230121175849
+air_temp:45.1
+apparent_t:48.0
+cloud:Partly Cloudy
+dewpt:9.8
+press:-939.9
+rel_hum:73.2
+wind_dir:S
+wind_spd_kmh:1.8
+wind_spd_kt:26.5
+

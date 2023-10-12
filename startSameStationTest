@@ -1,0 +1,8 @@
+#!/bin/bash
+
+./ContentServer localhost:4567 input/same-station-clock-test1.txt &
+./ContentServer localhost:4567 input/same-station-clock-test2.txt &
+
+
+wait
+exit 0

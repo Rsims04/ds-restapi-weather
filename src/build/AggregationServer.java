@@ -9,6 +9,9 @@ package build;
 
 import java.io.*;
 import java.net.*;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.PriorityQueue;
 import java.util.Timer;
@@ -58,12 +61,32 @@ public class AggregationServer {
   }
 
   /**
+   * Extracts and returns the content servers local date time.
+   * null if GET request.
+   */
+  public LocalDateTime extractLocalDate(BufferedReader in) throws IOException {
+    in.mark(1);
+    String s = in.readLine();
+    if (s.contains("GET")) {
+      in.reset();
+      return null;
+    }
+
+    LocalDateTime date = LocalDateTime.parse(
+      s,
+      DateTimeFormatter.ofPattern("uuuuMMddHHmmss")
+    );
+    return date;
+  }
+
+  /**
    * Creates a new thread and places in the queue
    */
   public void createThreadAndPlaceInQueue(
     String csID,
     int threadID,
-    Integer time
+    Integer time,
+    LocalDateTime date
   ) {
     System.out.println("\n---\nNew Thread - id:" + threadID + "\n---\n ");
     Thread t = new AggregationServerThread(
@@ -77,7 +100,7 @@ public class AggregationServer {
     threadCount++;
 
     // Place in Queue
-    Request r = new Request(time, t, threadID, csID);
+    Request r = new Request(time, date, t, threadID, csID);
     queue.add(r);
   }
 
@@ -181,9 +204,10 @@ public class AggregationServer {
           csID += "-" + threadID;
         }
         Integer time = extractTime(in);
+        LocalDateTime date = extractLocalDate(in);
 
         // Create a new thread and place in the priority queue.
-        createThreadAndPlaceInQueue(csID, threadID, time);
+        createThreadAndPlaceInQueue(csID, threadID, time, date);
 
         // Print Queue.
         System.out.println("QUEUED:");

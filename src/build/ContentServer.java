@@ -18,7 +18,10 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class ContentServer {
 
@@ -133,6 +136,25 @@ public class ContentServer {
   }
 
   /**
+   * Gets the local date from a request.
+   * local_date_time_full
+   */
+  public String extractLocalTime(String request) {
+    String time = "";
+
+    Scanner scanner = new Scanner(request);
+    while (scanner.hasNextLine()) {
+      String line = scanner.nextLine();
+      if (line.contains("local_date_time_full")) {
+        time = line.replaceAll("[^0-9]", "");
+        break;
+      }
+    }
+    scanner.close();
+    return time;
+  }
+
+  /**
    * Disconnects and closes connection.
    */
   public void disconnect() throws IOException {
@@ -145,6 +167,7 @@ public class ContentServer {
     int index = 1;
     for (String request : putRequests) {
       try {
+        String localTime = extractLocalTime(request);
         String threadID = csID + "-" + index;
         System.out.println("\n---\nNew Thread - id:" + threadID + "\n---\n ");
 
@@ -155,7 +178,8 @@ public class ContentServer {
           this,
           lc,
           csID,
-          request
+          request,
+          localTime
         );
         System.out.print("\n--- starting: " + csID + "-" + index + " ---\n");
         t.start();

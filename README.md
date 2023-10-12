@@ -99,6 +99,8 @@ The Lamport Clock timestamp will be stored in a file named `clock` each time the
 
 The content servers will update the clock on sending a message, the aggregation server will then update of receive of this request, and then the content server will again update on receive. GETClients do not have a clock, and their messages will not update the clock on receival at the Aggregation server as order is not important as long as they get the correct information.
 
+To ensure order when processes arrive concurrently, I have used the local_date_time_full as a secondary comparison when their Lamport Clocks are the same. The least recent date will be prioritised in the priority queue and always be run first. You can see this by running: `make clean` then `./AggregationServer` and then `startSameStationTest`, both requests arrive at the same time, but the request with the earliest date will always take priority, leading to the GETClient always getting the most recent information.
+
 ## Failures
 
 GETClients and Content Server on failure of connection or also in the Content servers case in the event of a 204, 400 or 500 response from the Aggregation server will both wait 10 seconds and then retry to connect and send the message through, more than 10 failures in a row will result in the clients/content servers giving up and shutting down that thread. Upon success the attempts counter will reset back to zero. This ensures that in the event that the Aggregation server crashes, there is a window to reconnect and resume where they left off.
