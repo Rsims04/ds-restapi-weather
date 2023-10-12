@@ -62,6 +62,12 @@ public class LamportClock {
       } catch (NumberFormatException e) {
         e.printStackTrace();
       }
+    } else {
+      try {
+        f.createNewFile();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
     }
   }
 
@@ -69,7 +75,6 @@ public class LamportClock {
    * Gets current timestamp
    */
   public synchronized Integer getTime() {
-    // return instance.timeStamp.get();
     restoreClock();
     return timeStamp;
   }

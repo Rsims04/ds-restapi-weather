@@ -15,11 +15,13 @@ public class Request implements Comparable<Request> {
 
   int clock;
   Thread thread;
+  Integer threadID;
   String csID;
 
-  Request(int clock, Thread thread, String csID) {
+  Request(int clock, Thread thread, Integer threadID, String csID) {
     this.clock = clock;
     this.thread = thread;
+    this.threadID = threadID;
     this.csID = csID;
   }
 

@@ -18,9 +18,11 @@ public class AggregationServer {
 
   private ServerSocket serverSocket;
   private Socket clientSocket;
+  private BufferedReader in;
+  private PrintWriter out;
+
   private LocalStorage localStorage = new LocalStorage();
   private PriorityQueue<Request> queue = new PriorityQueue<Request>();
-  private File localFile;
   private LamportClock lc = LamportClock.getInstance();
 
   private int threadCount = 0;
@@ -56,6 +58,75 @@ public class AggregationServer {
   }
 
   /**
+   * Creates a new thread and places in the queue
+   */
+  public void createThreadAndPlaceInQueue(
+    String csID,
+    int threadID,
+    Integer time
+  ) {
+    System.out.println("\n---\nNew Thread - id:" + threadID + "\n---\n ");
+    Thread t = new AggregationServerThread(
+      csID,
+      threadID,
+      clientSocket,
+      in,
+      out,
+      localStorage
+    );
+    threadCount++;
+
+    // Place in Queue
+    Request r = new Request(time, t, threadID, csID);
+    queue.add(r);
+  }
+
+  /**
+   * Will start threads in the queue.
+   * Order is determined by Lamport Clocks
+   * and priority queue.
+   * If request is a GET, order does not matter.
+   */
+  public void processQueue(Integer threadID) {
+    while (!queue.isEmpty()) {
+      try {
+        Request request = queue.peek();
+        // If request is not a GET, update clock.
+        if (request.csID != null && request.clock != 0) {
+          int serverTime = 0;
+          int attempts = 0;
+          while (attempts < 3) {
+            try {
+              serverTime = lc.getTime();
+              lc.receiveEvent(serverTime);
+              serverTime = lc.getTime();
+              break;
+            } catch (NumberFormatException e) {
+              System.err.println("Attempting to update clock...");
+            }
+            attempts++;
+          }
+          // Lamport Clocks to determine order.
+          if (request.clock < serverTime) {
+            request = queue.remove();
+            Thread.sleep(500);
+            System.out.print("\n--- starting: " + request.threadID + " ---\n");
+            request.thread.start();
+            startTimer(request.csID, localStorage);
+          }
+        } else {
+          request = queue.remove();
+          request.thread.start();
+        }
+        request.thread.join();
+      } catch (InterruptedException e) {
+        System.err.println("Interrupt server failure.");
+        e.printStackTrace();
+      }
+    }
+  }
+
+  /**
    * Start a 30 second timer.
    * After expired, removes all entries from provided csID in local storage.
    */
@@ -86,8 +157,9 @@ public class AggregationServer {
   public void start(int port) throws IOException {
     // Does local storage exist?
     if (this.localStorage.exists()) {
-      localFile = this.localStorage.getStore();
-      System.out.println("Local Storage exists: " + this.localFile.getName());
+      System.out.println(
+        "Local Storage exists: " + this.localStorage.getStore().getName()
+      );
     }
 
     this.clientSocket = null;
@@ -97,10 +169,11 @@ public class AggregationServer {
       try {
         this.clientSocket = this.serverSocket.accept();
 
-        BufferedReader in = new BufferedReader(
-          new InputStreamReader(clientSocket.getInputStream())
-        );
-        PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+        this.in =
+          new BufferedReader(
+            new InputStreamReader(clientSocket.getInputStream())
+          );
+        this.out = new PrintWriter(clientSocket.getOutputStream(), true);
 
         int threadID = threadCount;
         String csID = extractID(in);
@@ -109,22 +182,10 @@ public class AggregationServer {
         }
         Integer time = extractTime(in);
 
-        System.out.println("\n---\nNew Thread - id:" + threadID + "\n---\n ");
-        Thread t = new AggregationServerThread(
-          csID,
-          threadID,
-          clientSocket,
-          in,
-          out,
-          localStorage
-        );
-        threadCount++;
+        // Create a new thread and place in the priority queue.
+        createThreadAndPlaceInQueue(csID, threadID, time);
 
-        // Place in Queue
-        Request r = new Request(time, t, csID);
-        queue.add(r);
-
-        // Lamport Clocks to determine order
+        // Print Queue.
         System.out.println("QUEUED:");
         if (!queue.isEmpty()) {
           for (Request request : queue) {
@@ -133,43 +194,12 @@ public class AggregationServer {
             );
           }
 
-          while (!queue.isEmpty()) {
-            Request request = queue.peek();
-            // If request is not a GET, update clock
-            if (csID != null && request.clock != 0) {
-              int serverTime = 0;
-              int attempts = 0;
-              while (attempts < 3) {
-                try {
-                  serverTime = lc.getTime();
-                  lc.receiveEvent(serverTime);
-                  serverTime = lc.getTime();
-                  break;
-                } catch (NumberFormatException e) {
-                  System.err.println("Attempting to update clock...");
-                }
-                attempts++;
-              }
-              if (request.clock < serverTime) {
-                request = queue.remove();
-                Thread.sleep(500);
-                System.out.print("\n--- starting: " + threadID + " ---\n");
-                request.thread.start();
-                startTimer(request.csID, localStorage);
-              }
-            } else {
-              request = queue.remove();
-              request.thread.start();
-            }
-            request.thread.join();
-          }
+          // Start threads in the queue.
+          processQueue(threadID);
         }
       } catch (IOException e) {
         clientSocket.close();
         System.err.println("IO server failure.");
-        e.printStackTrace();
-      } catch (InterruptedException e) {
-        System.err.println("Interrupt server failure.");
         e.printStackTrace();
       }
     }

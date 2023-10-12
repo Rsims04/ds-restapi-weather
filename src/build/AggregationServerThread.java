@@ -42,6 +42,10 @@ class AggregationServerThread extends Thread {
     this.localStorage = localStorage;
   }
 
+  public int getThreadID() {
+    return threadID;
+  }
+
   /**
    * Returns stationID from input.
    * null if none provided.

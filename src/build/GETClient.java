@@ -27,7 +27,23 @@ public class GETClient {
   private PrintWriter out;
   private BufferedReader in;
 
+  private String serverName = "localhost";
+  private int portNumber = 4567;
+  private String stationID = "";
+
   public GETClient() {}
+
+  public String getServerName() {
+    return serverName;
+  }
+
+  public int getPortNumber() {
+    return portNumber;
+  }
+
+  public String getStationID() {
+    return stationID;
+  }
 
   /**
    * Try to connect to server at ip, port.
@@ -64,18 +80,13 @@ public class GETClient {
    *  The client will try 3 times before giving up.
    *  Each attempt in 10 second intervals.
    */
-  String run(
-    GETClient client,
-    String serverName,
-    int portNumber,
-    String stationID
-  ) throws UnknownHostException, IOException {
+  String run() throws UnknownHostException, IOException {
     String res = "";
     int attempts = 1;
     while (attempts <= 10) {
       try {
-        client.connect(serverName, portNumber);
-        res = client.sendMsg("GET /" + stationID + " HTTP/1.1");
+        connect(serverName, portNumber);
+        res = sendMsg("GET /" + stationID + " HTTP/1.1");
         break;
       } catch (ConnectException ce) {
         if (attempts == 3) {
@@ -110,13 +121,14 @@ public class GETClient {
     this.clientSocket.close();
   }
 
-  public static void main(String[] args)
-    throws UnknownHostException, IOException {
-    GETClient client = new GETClient();
-    String serverName = "localhost";
-    int portNumber = 4567;
-    String stationID = "";
-
+  /**
+   * Processes and formats command line arguments.
+   * Gets:
+   * - Server name
+   * - Port number
+   * - Station ID
+   */
+  public void getInput(String[] args) {
     try {
       // Split input to get: servername, portnumber and stationID
       if (args.length > 0) {
@@ -158,9 +170,17 @@ public class GETClient {
       System.err.println("Bad input.");
       e.printStackTrace();
     }
+  }
 
-    // Connect to server
-    String res = client.run(client, serverName, portNumber, stationID);
+  public static void main(String[] args)
+    throws UnknownHostException, IOException {
+    GETClient client = new GETClient();
+
+    // Process inputs
+    client.getInput(args);
+
+    // Connect to server, and send message.
+    String res = client.run();
 
     if (res != "") {
       // Print response
