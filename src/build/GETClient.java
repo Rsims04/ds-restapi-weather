@@ -72,7 +72,7 @@ public class GETClient {
   ) throws UnknownHostException, IOException {
     String res = "";
     int attempts = 1;
-    while (attempts <= 3) {
+    while (attempts <= 10) {
       try {
         client.connect(serverName, portNumber);
         res = client.sendMsg("GET /" + stationID + " HTTP/1.1");
@@ -159,9 +159,7 @@ public class GETClient {
       e.printStackTrace();
     }
 
-    // // Connect to server
-    // client.connect(serverName, portNumber);
-
+    // Connect to server
     String res = client.run(client, serverName, portNumber, stationID);
 
     if (res != "") {

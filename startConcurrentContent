@@ -1,15 +1,8 @@
 #!/bin/bash
 
-# for i in 1 .. 10
-# do
-#     ./ContentServer localhost:4567 randInputs/rand_2 &
-# done
-
-# ./ContentServer localhost:4567 input.txt &
-# ./ContentServer localhost:4567 input.txt &
-
 ./ContentServer localhost:4567 randInputs/rand_0 &
 ./ContentServer localhost:4567 randInputs/rand_1 &
+./ContentServer localhost:4567 randInputs/rand_2 &
 
 wait
 exit 0

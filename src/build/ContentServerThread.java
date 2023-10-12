@@ -12,6 +12,7 @@ public class ContentServerThread extends Thread {
   private String serverName;
   private int portNumber;
   private Integer ID;
+  private String threadID;
   private Socket contentSocket;
   private ContentServer content;
   private LamportClock lc = LamportClock.getInstance();
@@ -22,16 +23,16 @@ public class ContentServerThread extends Thread {
   private Integer time;
 
   ContentServerThread(
+    String threadID,
     String serverName,
     int portNumber,
     Integer ID,
     ContentServer content,
     LamportClock lc,
     int csID,
-    // PrintWriter out,
-    // BufferedReader in,
     String request
   ) {
+    this.threadID = threadID;
     this.serverName = serverName;
     this.portNumber = portNumber;
     this.ID = ID;
@@ -39,8 +40,6 @@ public class ContentServerThread extends Thread {
     this.lc = LamportClock.getInstance();
     this.csID = csID;
     this.request = request;
-    // this.in = in;
-    // this.out = out;
   }
 
   /**
@@ -63,55 +62,13 @@ public class ContentServerThread extends Thread {
     this.contentSocket.close();
   }
 
-  //   /**
-  //    *  Content Server attempts to connect to the known Server.
-  //    *  The client will try 3 times before giving up.
-  //    *  Each attempt in 10 second intervals.
-  //    */
-  //   String start(
-  //     ContentServer content,
-  //     String serverName,
-  //     int portNumber,
-
-  //   ) throws UnknownHostException, IOException {
-  //     String res = "";
-  //     int attempts = 1;
-  //     while (attempts <= 3) {
-  //       try {
-  //         content.connect(serverName, portNumber);
-  //         res = content.sendMsg("GET /" + stationID + " HTTP/1.1");
-  //         break;
-  //       } catch (ConnectException ce) {
-  //         if (attempts == 3) {
-  //           System.err.println(
-  //             "Attempt " + attempts + ": Could not connect. Try again later.\n---"
-  //           );
-  //           break;
-  //         }
-  //         System.err.println(
-  //           "Attempt " +
-  //           attempts +
-  //           ": Could not connect, trying again in 10 seconds.\n---"
-  //         );
-
-  //         try {
-  //           Thread.sleep(10000);
-  //         } catch (InterruptedException ie) {
-  //           ie.printStackTrace();
-  //         }
-  //       }
-  //       attempts++;
-  //     }
-  //     return res;
-  //   }
-
   /**
    * Send message to server.
    * Update Lamport Clock.
    * Returns response.
    */
   public synchronized String sendMsg(String msg) throws IOException {
-    out.println(csID + "\r");
+    out.println(threadID + "\r");
     out.println(this.time + "\r" + msg);
 
     String res = "";
@@ -123,7 +80,6 @@ public class ContentServerThread extends Thread {
       res += line + '\n';
       line = in.readLine();
     }
-    // lc.receiveEvent(lc.getTime());
     return res;
   }
 
@@ -143,7 +99,7 @@ public class ContentServerThread extends Thread {
         this.connect(serverName, portNumber);
         System.out.print("\n--- connected ---\n");
         System.out.print(
-          "---\n" + this.ID + " entered the critical section.\n---\n"
+          "---\n" + this.threadID + " entered the critical section.\n---\n"
         );
         System.out.println(this.request);
         res = this.sendMsg(this.request);
@@ -158,21 +114,36 @@ public class ContentServerThread extends Thread {
           System.out.println(res);
           lc.receiveEvent(time);
           System.out.print(
-            "\n---\n" + this.ID + " Exiting the critical section.\n---\n\n"
+            "\n---\n" +
+            this.threadID +
+            " Exiting the critical section.\n---\n\n"
           );
           // Reset attempts after success.
           attempts = 0;
           break;
+        } else if (
+          res.contains("204 No Content") ||
+          res.contains("400 Bad Request") ||
+          res.contains("500 Internal Server Error")
+        ) {
+          attempts++;
+          System.out.println(
+            "\n!!!!!!\n" +
+            csID +
+            " " +
+            res +
+            ": Attempting again in 10 seconds...\n!!!!!\n"
+          );
+          continue;
         }
       } catch (IOException e) {
-        System.err.println("Loop IO failure.\n");
-        e.printStackTrace();
+        System.err.println("Server Failure.\n");
         attempts++;
         try {
           System.out.println(
             "\n!!!!!!\n" +
             csID +
-            "NO RESPONSE: Attempting again in 10 seconds...\n!!!!!\n"
+            " NO RESPONSE: Attempting again in 10 seconds...\n!!!!!\n"
           );
           sleep(10000);
         } catch (InterruptedException se) {

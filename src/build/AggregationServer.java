@@ -97,7 +97,6 @@ public class AggregationServer {
       try {
         this.clientSocket = this.serverSocket.accept();
 
-        System.out.println("\nClient Connected!");
         BufferedReader in = new BufferedReader(
           new InputStreamReader(clientSocket.getInputStream())
         );
@@ -106,7 +105,7 @@ public class AggregationServer {
         int threadID = threadCount;
         String csID = extractID(in);
         if (csID != null) {
-          csID += threadID;
+          csID += "-" + threadID;
         }
         Integer time = extractTime(in);
 
@@ -126,7 +125,7 @@ public class AggregationServer {
         queue.add(r);
 
         // Lamport Clocks to determine order
-        System.out.println("QUEUED:\n");
+        System.out.println("QUEUED:");
         if (!queue.isEmpty()) {
           for (Request request : queue) {
             System.err.println(
@@ -146,7 +145,7 @@ public class AggregationServer {
                   lc.receiveEvent(serverTime);
                   serverTime = lc.getTime();
                   break;
-                } catch (Exception e) {
+                } catch (NumberFormatException e) {
                   System.err.println("Attempting to update clock...");
                 }
                 attempts++;

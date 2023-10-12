@@ -120,11 +120,13 @@ public class JSONParser {
         }
 
         String keyValPair[] = line.split(":", 2);
-        String key = keyValPair[0].replace("\"", "").trim();
-        String value = keyValPair[1].replace(",", "").trim();
-        value = value.replace("\"", "");
+        if (keyValPair.length > 1) {
+          String key = keyValPair[0].replace("\"", "").trim();
+          String value = keyValPair[1].replace(",", "").trim();
+          value = value.replace("\"", "");
 
-        jsonText += key + ":" + value + "\n";
+          jsonText += key + ":" + value + "\n";
+        }
       }
     }
     return jsonText;

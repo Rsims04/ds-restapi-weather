@@ -118,9 +118,11 @@ class AggregationServerThread extends Thread {
         response = craftHeader(200);
         int i = 1;
         for (String json : jsons) {
-          response += j.fromJSON(json);
-          if (i < jsons.size()) {
-            response += '\n';
+          if (json != null) {
+            response += j.fromJSON(json);
+            if (i < jsons.size()) {
+              response += '\n';
+            }
           }
           i++;
         }

@@ -21,7 +21,7 @@ public class LocalStorage {
 
   int numEntries;
 
-  LocalStorage() {
+  public LocalStorage() {
     this.numEntries = 0;
   }
 
@@ -68,25 +68,27 @@ public class LocalStorage {
   public synchronized void updateStore(String jsonObject, String csID)
     throws IOException {
     numEntries = getNumEntries(null);
-    try {
-      Path file = Paths.get("localStorage.txt");
-      LocalDateTime date = LocalDateTime.now();
+    if (jsonObject != "") {
+      try {
+        Path file = Paths.get("localStorage.txt");
+        LocalDateTime date = LocalDateTime.now();
 
-      BufferedWriter fileWriter = Files.newBufferedWriter(
-        file,
-        StandardOpenOption.APPEND,
-        StandardOpenOption.CREATE
-      );
-      fileWriter.append(csID + ";" + date + '\n');
-      fileWriter.append(jsonObject);
-      fileWriter.close();
-      numEntries++;
-      System.out.println(
-        "Successfully wrote to the " + file + ". " + numEntries + " Entries."
-      );
-    } catch (IOException e) {
-      System.out.println("An error occurred.");
-      e.printStackTrace();
+        BufferedWriter fileWriter = Files.newBufferedWriter(
+          file,
+          StandardOpenOption.APPEND,
+          StandardOpenOption.CREATE
+        );
+        fileWriter.append(csID + ";" + date + '\n');
+        fileWriter.append(jsonObject);
+        fileWriter.close();
+        numEntries++;
+        System.out.println(
+          "Successfully wrote to the " + file + ". " + numEntries + " Entries."
+        );
+      } catch (IOException e) {
+        System.out.println("An error occurred.");
+        e.printStackTrace();
+      }
     }
   }
 
@@ -253,7 +255,6 @@ public class LocalStorage {
     for (String stationID : stationIDs) {
       jsonObjects.add(getCurrentEntry(stationID));
     }
-
     return jsonObjects;
   }
 }

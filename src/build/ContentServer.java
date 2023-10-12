@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -129,19 +128,17 @@ public class ContentServer {
       // Send each individual request to aggregation server and await response.
       int index = 1;
       for (String request : content.putRequests) {
-        System.out.println(
-          "\n---\nNew Thread - id:" + content.csID + "\n---\n "
-        );
+        String threadID = content.csID + "-" + index;
+        System.out.println("\n---\nNew Thread - id:" + threadID + "\n---\n ");
 
         Thread t = new ContentServerThread(
+          threadID,
           serverName,
           portNumber,
           content.csID,
           content,
           content.lc,
           content.csID,
-          // content.out,
-          // content.in,
           request
         );
         System.out.print(

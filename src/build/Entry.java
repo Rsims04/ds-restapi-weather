@@ -6,7 +6,8 @@ package build;
  * - a jsonObject
  * - and a date
  *
- * Used in local storage.
+ * Used in local storage to compare entry dates.
+ * While storing the JSON data.
  */
 import java.time.LocalDateTime;
 

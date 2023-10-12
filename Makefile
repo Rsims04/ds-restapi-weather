@@ -49,18 +49,22 @@ $(all_javas):
 $(all_tests):
 	$(FIND) $(SOURCE_TEST_DIR) -name '*Test.java' > $@
 
-TEST_SOURCE := test.AggregationServerTest \
+JUNIT_TEST_SOURCE := test.AggregationServerTest \
 test.AggregationServerThreadTest \
 test.ContentServerTest \
 test.GETClientTest \
 test.JSONParserTest \
 test.LamportClockTest \
-test.LocalStorageTest \
+
+
+TEST_SOURCE := test.LocalStorageTest
 
 .PHONY: test
 test:
 	$(JC) $(TESTFLAGS) $(SOURCE_TEST_DIR)/*.java src/build/*.java -d dest 
-	java -cp dest:lib/hamcrest-core-1.3.jar:lib/junit-4.13.2.jar org.junit.runner.JUnitCore $(TEST_SOURCE)
+	java -cp dest:lib/hamcrest-core-1.3.jar:lib/junit-4.13.2.jar org.junit.runner.JUnitCore $(JUNIT_TEST_SOURCE)
+	java -cp dest:test.LocalStorageTest $(TEST_SOURCE)
+
 
 
 .PHONY: clean

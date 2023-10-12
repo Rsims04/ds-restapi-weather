@@ -59,6 +59,8 @@ public class LamportClock {
         setTime(Integer.parseInt(reader.readLine()));
       } catch (IOException e) {
         e.printStackTrace();
+      } catch (NumberFormatException e) {
+        e.printStackTrace();
       }
     }
   }
